@@ -7,6 +7,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>My AI Stories</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anton&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&display=swap" rel="stylesheet">
 <style>
@@ -127,7 +130,8 @@ button:disabled{opacity:.5;cursor:default}
 .m.a{background:var(--card);align-self:flex-start;backdrop-filter:blur(4px)}
 .novel .m.a{max-width:100%;font:17px/1.75 Literata,Georgia,serif}
 .novel .m.a em{color:#cfc9d6}.m.a .dl{font-style:normal;color:#fff;font-weight:500}
-.m.u{background:var(--red);color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
+.m.u em.act{color:#b9c6dc}
+.m.u{background:#26344d;border:1px solid #3a4c6b;color:#eef2f8;align-self:flex-end;border-bottom-right-radius:6px}
 .m.ooc{background:#0008;border:1px dashed #fff4;color:var(--mute);font-size:14px}
 .m.err{background:#0009;border:1px solid var(--red);color:#ffb3c0}
 .acts2{display:flex;gap:8px;align-self:flex-start;flex-wrap:wrap}
@@ -151,7 +155,18 @@ button:disabled{opacity:.5;cursor:default}
 .chlist summary{cursor:pointer;font-weight:600;min-height:28px}
 .chlist p{white-space:pre-wrap;font:15px/1.65 Literata,Georgia,serif;margin:8px 0 0;color:#ddd}
 .book{padding:20px max(6vw,18px) 60px;font:17px/1.8 Literata,Georgia,serif}
-.book p{margin:0 0 14px;white-space:pre-wrap}.book .you{color:#ff8fa3}
+.book p{margin:0 0 14px;white-space:pre-wrap}.book .you{color:#9fb4d6}
+.pchip{display:flex;align-items:center;gap:8px;margin:0 max(3vw,10px) 0;background:#0b0a0cdd;border:1.5px solid #fff3;border-radius:999px;padding:4px 14px 4px 4px;min-height:40px;font-size:14px;font-weight:600;align-self:flex-start;max-width:70%}
+.pchip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plist{display:grid;gap:10px}
+.pcard{display:flex;align-items:center;gap:14px;background:var(--panel);border-radius:18px;padding:12px;text-align:start;width:100%;min-height:76px;border:1.5px solid transparent}
+.pcard.sel{border-color:var(--red)}
+.pcard .ph{width:56px;height:56px;border-radius:12px;background:#222 center top/cover;flex:none}
+.pcard b{display:block;font-size:16px}.pcard small{color:var(--mute)}
+.badge{font-size:11.5px;border:1px solid #fff5;border-radius:999px;padding:1px 8px;margin-inline-start:6px;font-weight:500;vertical-align:2px}
+.switch{width:52px;height:30px;min-height:30px;border-radius:999px;background:#333;position:relative;padding:0;flex:none}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}
+.switch[aria-checked=true]{background:var(--red)}.switch[aria-checked=true]::after{left:26px}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#fff;color:#000;padding:10px 16px;border-radius:14px;font-size:14px;display:none;z-index:20;max-width:90vw}
 dialog{border:0;border-radius:22px;padding:20px;background:var(--panel);color:var(--ink);width:min(420px,92vw);max-height:85dvh}
 dialog::backdrop{background:#000b}
@@ -183,10 +198,9 @@ dialog::backdrop{background:#000b}
 <!-- YO -->
 <section class="view tabpad" id="v-me">
   <div class="mehead"><div class="meav" id="meAv">?</div><div><h2 class="big-t" style="font-size:30px" id="meName">You</h2><div style="opacity:.85;font-size:14px" id="meStats"></div></div></div>
-  <div class="sect"><h3>My persona</h3><p class="hint" style="margin:0">Your name and what you are like. Every character will keep it in mind.</p>
-    <div class="box"><input id="meNameIn" maxlength="40" placeholder="Your name or nickname"></div>
-    <div class="box"><textarea id="meAbout" maxlength="3000" placeholder="Age, looks, personality, likes… whatever you want them to know."></textarea></div>
-    <button class="go sm" id="meSave">Save</button></div>
+  <div class="sect"><div class="cardh"><h3>My personas</h3><button class="gen" id="newPersona">＋ New persona</button></div>
+    <p class="hint" style="margin:0">Who you play in your stories. Pick one per chat; the default one is used in new chats.</p>
+    <div class="plist" id="pList"></div></div>
   <div class="sect"><h3>AI engine</h3><div class="engine" id="engineBox"><i></i><span id="engineTxt">Checking…</span></div>
     <div id="apiCfg" style="display:none;gap:12px">
       <p class="hint" style="margin:0">Free AI chain: the app uses the first AI that still has messages left today and switches to the next one automatically. Add as many keys as you can. They are stored only on this phone.</p>
@@ -288,6 +302,7 @@ dialog::backdrop{background:#000b}
   </div>
   <div class="msgs" id="msgs" aria-live="polite"></div>
   <div class="sugg" id="sugg"></div>
+  <button class="pchip" id="pChip" aria-label="Choose your persona"></button>
   <div class="comp">
     <textarea id="inp" rows="1" placeholder="Say something to me!" aria-label="Message"></textarea>
     <button class="round" id="bulb" aria-label="Suggest replies">💡</button>
@@ -305,6 +320,25 @@ dialog::backdrop{background:#000b}
     <div><div class="lbl"><span>Story bible</span></div><p class="hint">Characters, families, places, secrets, debts, plots and how each one feels about you.</p><div class="box"><textarea id="mBible" class="tall" style="min-height:280px"></textarea></div></div>
     <button class="go sm" id="memSave">Save changes</button>
     <div><h3 style="font-size:22px;margin-bottom:10px">Chapters</h3><div class="chlist" id="mChaps"></div></div>
+  </div>
+</section>
+
+<section class="view" id="v-persona">
+  <div class="top dots"><button class="ib big" id="backP" aria-label="Back">‹</button><div class="t"><b id="pTitle">Create your persona</b></div><button class="danger" id="pDel" style="min-height:38px">Delete</button></div>
+  <div class="form" style="padding-bottom:40px">
+    <div><div class="lbl"><span>Cover</span></div>
+      <div class="media" style="margin-top:12px"><div class="mprev" id="pPrev"></div>
+        <div class="mbtns"><button type="button" class="mbtn" id="pPick">Upload image</button>
+          <input type="file" id="pImg" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
+          <div class="paste" id="pPaste" contenteditable="true" role="textbox" aria-label="Paste image"></div>
+          <button type="button" class="del" id="pRm" style="justify-self:start">Remove image</button></div></div></div>
+    <div><div class="lbl"><span>What is your name? <i>*</i></span><span class="cnt" data-pc="pName">0/40</span></div><div class="box" style="margin-top:10px"><input id="pName" maxlength="40"></div></div>
+    <div><div class="lbl"><span>Preferred name or title</span><span class="cnt" data-pc="pNick">0/30</span></div><div class="box" style="margin-top:10px"><input id="pNick" maxlength="30" placeholder="What characters call you"></div></div>
+    <div><div class="lbl"><span>Gender &amp; age</span><span class="cnt" data-pc="pGen">0/60</span></div><div class="box" style="margin-top:10px"><input id="pGen" maxlength="60" placeholder="E.g. Woman, 19"></div></div>
+    <div><div class="lbl"><span>Profile</span><span class="cnt" data-pc="pProf">0/3000</span></div><p class="hint">Appearance, personality, background, skills, how you behave. The AI uses it to describe and treat you.</p>
+      <div class="box"><textarea id="pProf" class="tall" maxlength="3000"></textarea></div></div>
+    <div class="row" style="justify-content:space-between;background:var(--panel);border-radius:18px;padding:14px 16px"><div><b>Set as default persona</b><div class="hint" style="margin:2px 0 0">Selected automatically in new chats.</div></div><button type="button" class="switch" id="pDef" role="switch" aria-checked="false" aria-label="Default persona"></button></div>
+    <button class="go" id="pSave">Save changes</button>
   </div>
 </section>
 
@@ -361,6 +395,7 @@ const PRESETS=[
 
 const RAW_BASE=100,CHAPTER_SIZE=50,KEEP_VISIBLE=30,MEM_EVERY=3,MAX_CHAPTERS=30;
 let db=null,uid=null,sample=null,visionOK=false;
+let personas=[],pimgs={},editP=null,editPImg=undefined;
 let chars=[],arch={},imgs={},me={about:'',name:''},cur=null,draft=null,draftImg=undefined,busy=false,ctrl=null,homeTab='mine';
 let cfg={};try{cfg=JSON.parse(localStorage.getItem('historiasIA.cfg')||'{}')}catch(e){}
 const saveCfg=()=>{try{localStorage.setItem('historiasIA.cfg',JSON.stringify(cfg))}catch(e){}};
@@ -451,6 +486,7 @@ function face(c){
 }
 const pic=c=>imgs[c.id]||face(c);
 const avHTML=(c,s)=>`<span class="av" style="width:${s}px;height:${s}px;background-image:url('${pic(c)}')"></span>`;
+function fmtU(t){return esc(t).replace(/\*([^*\n]+)\*/g,'<em class="act">$1</em>')}
 function fmt(t,style){
   let s=esc(t);
   s=s.replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
@@ -486,13 +522,14 @@ function migrate(c){
   return Object.assign(c,{style:c.style||'novel',len:c.len||'m',tags:c.tags||[],att:c.att||[],rules:c.rules||'',lore:c.lore||[],chapters:c.chapters||[],msgs:c.msgs||[],facts:c.facts||'',bible:c.bible||'',saga:c.saga||'',intro:c.intro||'',prologue:c.prologue||'',details:c.details||'',role:c.role||'',age:c.age||'',gender:c.gender||''});
 }
 function hydrate(docs){
-  chars=[];arch={};imgs={};let m=null;
+  chars=[];arch={};imgs={};personas=[];pimgs={};let m=null;
   for(const {id,data} of docs){const o=clone(data);
-    if(id==='_me')m=o;else if(o.kind==='arch')(arch[o.cid]=arch[o.cid]||[]).push({...o,id});else if(o.kind==='img')imgs[o.cid]=o.data;else if(o.id)chars.push(migrate(o))}
+    if(id==='_me')m=o;else if(o.kind==='persona')personas.push(o);else if(o.kind==='pimg')pimgs[o.pid]=o.data;else if(o.kind==='arch')(arch[o.cid]=arch[o.cid]||[]).push({...o,id});else if(o.kind==='img')imgs[o.cid]=o.data;else if(o.id)chars.push(migrate(o))}
   for(const k in arch)arch[k].sort((a,b)=>a.n-b.n);
-  me={about:m?.about||'',name:m?.name||''};
+  me={about:m?.about||'',name:m?.name||'',defPersona:m?.defPersona||''};
+  personaMigrate();
 }
-function allDocs(){const out=chars.map(c=>({id:c.id,data:c}));for(const k in arch)for(const a of arch[k])out.push({id:a.id,data:a});for(const k in imgs)out.push({id:'img_'+k,data:{kind:'img',cid:k,data:imgs[k]}});out.push({id:'_me',data:{...me,kind:'me'}});return out}
+function allDocs(){const out=chars.map(c=>({id:c.id,data:c}));for(const k in arch)for(const a of arch[k])out.push({id:a.id,data:a});for(const k in imgs)out.push({id:'img_'+k,data:{kind:'img',cid:k,data:imgs[k]}});for(const x of personas)out.push({id:x.id,data:x});for(const k in pimgs)out.push({id:'pimg_'+k,data:{kind:'pimg',pid:k,data:pimgs[k]}});out.push({id:'_me',data:{...me,kind:'me'}});return out}
 
 /* ---------- navigation ---------- */
 const TABS=['v-home','v-chats','v-me'];
@@ -581,7 +618,7 @@ $('imgGo').addEventListener('click',async()=>{
   try{
     const txt=await llm({system:CREATOR,prompt:`${vis?`I am sending ${pend.length} image(s). The first one is the main character: describe them faithfully. Use the others as clues (other characters, places, mood).`:'Invent a surprising character and story.'}
 User preferences (optional): how they treat the user: ${imgAtt.join(', ')||'your choice, whatever has the most hook'}; genres: ${imgTags.join(', ')||'your choice, based on the images'}; extra: ${$('imgExtra').value||'nothing'}.
-About the user: ${me.name||''} ${me.about||''}
+About the user's persona: ${personaText(personaFor(null))}
 Return ONLY JSON in this shape: ${CARD_JSON} with 3-6 lore entries.`},{images:vis?pend:[],max:3500,tier:'default'});
     const j=parseJSON(txt);if(!j||!j.name)throw{code:'parse'};
     const c=migrate({id:newId(),hue:HUES[Math.floor(Math.random()*HUES.length)],style:'novel',len:'m'});
@@ -715,9 +752,10 @@ function openChat(id){
   $('chatAv').innerHTML=avHTML(cur,40);$('chatName').textContent=cur.name;
   const n=(cur.sagaCount||0)+cur.chapters.length;$('chatSub').textContent='LV'+lvl(cur)+' · Chapter '+(n+1);
   $('v-chat').classList.toggle('novel',cur.style==='novel');
-  $('sugg').innerHTML='';renderMsgs();show('v-chat');
+  if(!cur.personaId&&me.defPersona){cur.personaId=me.defPersona}
+  renderPChip();$('sugg').innerHTML='';renderMsgs();show('v-chat');
 }
-function bubble(m,c){if(m.hid)return '';const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}">${m.r==='a'?fmt(m.t,c.style):esc(m.t)}</div>`}
+function bubble(m,c){if(m.hid)return '';const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</div>`}
 function renderMsgs(extra=''){
   const c=cur,ms=c.msgs,last=ms.at(-1),n=(c.sagaCount||0)+c.chapters.length;
   let h=c.intro?`<details class="intro dots" ${ms.filter(m=>!m.hid).length>1?'':'open'}><summary><b>Intro</b> ▾</summary><p>${esc(c.intro)}</p></details>`:'';
@@ -741,7 +779,7 @@ function memBlock(c){
   const lo=activeLore(c),others=c.lore.filter(l=>!lo.includes(l)&&l.k);
   return `
 === PERMANENT MEMORY (source of truth; follow it exactly) ===
-THE USER: ${me.name?'their name is '+me.name+'. ':''}${me.about||''}
+THE USER'S CHARACTER (persona the user plays — use this name and these traits for them, address them by the preferred name): ${personaText(personaFor(c))}
 WHAT YOU KNOW ABOUT THE USER: ${c.facts||'(nothing yet)'}
 ACTIVE LOREBOOK: ${lo.map(l=>'['+l.k+'] '+l.t).join('\n')||'(none)'}
 ${others.length?'OTHER LOREBOOK ENTRIES (they exist; stay consistent if they come up): '+others.map(l=>l.k).join('; '):''}
@@ -751,7 +789,7 @@ ${c.chapters.length?'RECENT CHAPTERS:\n'+c.chapters.map((x,i)=>'['+((c.sagaCount
 === END OF MEMORY ===
 The most recent messages follow, word for word. Never contradict the memory or the card: names, ages, appearance, deaths, injuries, debts, promises, alliances, and what each character knows or doesn't know. If something is not in memory, do not claim it already happened.`;
 }
-const FREE=`Content: fiction for an adult who created it for fun. Like a good novel, you may handle dark and mature themes head-on: organized crime, violence, betrayal, murder, revenge, corruption, drugs, war, psychological and family abuse, harsh family conflict, dark romance, moral dilemmas and strong language. Villains are believable and dangerous, choices have real consequences, and characters can die. Don't soften the plot, don't moralize, and don't break the fiction with warnings. If the user writes inside (( )), it is an out-of-story instruction: follow it without commenting on it.
+const FREE=`Content: fiction for an adult who created it for fun. Like a good novel, you may handle dark and mature themes head-on: organized crime, violence, betrayal, murder, revenge, corruption, drugs, war, psychological and family abuse, harsh family conflict, dark romance, moral dilemmas and strong language. Villains are believable and dangerous, choices have real consequences, and characters can die. Don't soften the plot, don't moralize, and don't break the fiction with warnings. In the user's messages, text between asterisks *like this* is narration or their character's inner thoughts: other characters do NOT hear it and cannot know those thoughts; they can only react to physical actions they could actually see. Text outside asterisks is what the user's character says out loud, and others hear it. If the user writes inside (( )), it is an out-of-story instruction: follow it without commenting on it.
 Only if the user says outside the fiction that they are in real danger or thinking of harming themselves, step out of the story kindly and encourage them to reach out for help (in Spain: 024; elsewhere, local emergency services).`;
 function charBlock(c){return `CHARACTER (mandatory; this is the most important part of the experience)
 How they treat the user: ${c.att.join(', ')||'according to their personality'}.
@@ -888,17 +926,70 @@ $('memNow').addEventListener('click',async()=>{if(engine()==='none'){noAI();retu
 $('readBtn').addEventListener('click',()=>{
   const c=cur,all=[...(arch[c.id]||[]).flatMap(a=>a.msgs),...c.msgs].filter(m=>!m.hid);
   $('readTitle').textContent=c.name;
-  $('book').innerHTML=(c.intro?`<p style="color:var(--mute)">${esc(c.intro)}</p>`:'')+(all.length?all.map(m=>`<p class="${m.r==='u'?'you':''}">${m.r==='a'?fmt(m.t,c.style):esc(m.t)}</p>`).join(''):'<p class="you">Nothing written yet.</p>');
+  $('book').innerHTML=(c.intro?`<p style="color:var(--mute)">${esc(c.intro)}</p>`:'')+(all.length?all.map(m=>`<p class="${m.r==='u'?'you':''}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</p>`).join(''):'<p class="you">Nothing written yet.</p>');
   show('v-read');
 });
 $('back4').addEventListener('click',()=>{renderMem();show('v-mem')});
 
+/* ---------- personas ---------- */
+function personaMigrate(){ // turn the old single "My persona" into a persona card
+  if(!personas.length&&(me.name||me.about)){const x={id:'p'+Date.now().toString(36),kind:'persona',name:me.name||'Me',nick:'',gender:'',profile:me.about||''};personas.push(x);me.defPersona=x.id;write(x.id,x);saveMe()}
+}
+const getP=id=>personas.find(x=>x.id===id);
+function personaFor(c){return getP(c&&c.personaId)||getP(me.defPersona)||null}
+function personaText(x){if(!x)return '(no persona chosen)';return `${x.name}${x.nick?' (called "'+x.nick+'")':''}${x.gender?', '+x.gender:''}. ${x.profile||''}`}
+const pPic=x=>pimgs[x.id]||face({hue:300,name:x.name});
+function renderPList(){
+  $('pList').innerHTML=(personas.length?personas.map(x=>`<button class="pcard" data-pe="${esc(x.id)}"><span class="ph" style="background-image:url('${pPic(x)}')"></span><span style="flex:1;min-width:0"><b>${esc(x.name)}${me.defPersona===x.id?'<span class="badge">Default</span>':''}</b><small>${esc(x.gender||x.nick||'')}</small></span></button>`).join(''):'<p class="hint" style="margin:0">No personas yet. Create one to be yourself (or anyone) in your stories.</p>');
+}
+$('pList').addEventListener('click',e=>{const b=e.target.closest('[data-pe]');if(b)openPersona(b.dataset.pe)});
+$('newPersona').addEventListener('click',()=>openPersona(null));
+let pReturn='v-me';
+function openPersona(id){
+  const x=id?getP(id):null;editP=x?clone(x):{id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),kind:'persona',name:'',nick:'',gender:'',profile:''};editPImg=undefined;
+  $('pTitle').textContent=x?'Edit persona':'Create your persona';$('pDel').style.display=x?'':'none';
+  $('pName').value=editP.name;$('pNick').value=editP.nick;$('pGen').value=editP.gender;$('pProf').value=editP.profile;
+  $('pDef').setAttribute('aria-checked',String(x?me.defPersona===x.id:!personas.length));
+  pPrevR();pCounts();pReturn=document.querySelector('.view.on')?.id==='v-chat'?'v-chat':'v-me';show('v-persona');
+}
+function pPrevR(){const im=editPImg===undefined?pimgs[editP.id]:editPImg;$('pPrev').style.backgroundImage=`url('${im||face({hue:300,name:editP.name||'?'})}')`}
+function pCounts(){for(const el of document.querySelectorAll('[data-pc]')){const i=$(el.dataset.pc);el.textContent=i.value.length+'/'+i.maxLength}}
+$('v-persona').addEventListener('input',pCounts);
+$('pDef').addEventListener('click',()=>{const b=$('pDef');b.setAttribute('aria-checked',String(b.getAttribute('aria-checked')!=='true'))});
+$('pPick').addEventListener('click',()=>{try{$('pImg').click()}catch(e){toast('Paste the image into the dotted box.')}});
+$('pImg').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';const d=await readImg(f,700);if(d){editPImg=d;pPrevR()}});
+wirePaste($('pPaste'),async f=>{const d=await readImg(f,700);if(d){editPImg=d;pPrevR()}});
+$('pRm').addEventListener('click',()=>{editPImg=null;pPrevR()});
+$('pSave').addEventListener('click',()=>{
+  editP.name=$('pName').value.trim();if(!editP.name){toast('Your persona needs a name.');$('pName').focus();return}
+  editP.nick=$('pNick').value.trim();editP.gender=$('pGen').value.trim();editP.profile=$('pProf').value.trim();
+  const i=personas.findIndex(x=>x.id===editP.id);if(i>=0)personas[i]=editP;else personas.push(editP);write(editP.id,editP);
+  if(editPImg!==undefined){if(editPImg){pimgs[editP.id]=editPImg;write('pimg_'+editP.id,{kind:'pimg',pid:editP.id,data:editPImg})}else{delete pimgs[editP.id];write('pimg_'+editP.id,null)}}
+  const def=$('pDef').getAttribute('aria-checked')==='true';
+  if(def)me.defPersona=editP.id;else if(me.defPersona===editP.id)me.defPersona='';saveMe();
+  if(pReturn==='v-chat'&&cur){cur.personaId=editP.id;saveChar(cur);openChat(cur.id)}else{renderMe();show('v-me')}
+  toast('Persona saved');
+});
+$('pDel').addEventListener('click',()=>ask('Delete “'+esc(editP.name)+'”?','The persona is removed. Your stories stay.','Delete',()=>{
+  personas=personas.filter(x=>x.id!==editP.id);write(editP.id,null);if(pimgs[editP.id]){delete pimgs[editP.id];write('pimg_'+editP.id,null)}
+  if(me.defPersona===editP.id){me.defPersona='';saveMe()}for(const c of chars)if(c.personaId===editP.id){delete c.personaId;saveChar(c)}
+  renderMe();show('v-me')}));
+$('backP').addEventListener('click',()=>{if(pReturn==='v-chat'&&cur)openChat(cur.id);else{renderMe();show('v-me')}});
+function renderPChip(){const x=personaFor(cur);$('pChip').innerHTML=x?`<span class="av" style="width:32px;height:32px;background-image:url('${pPic(x)}')"></span><span>${esc(x.nick||x.name)}</span>`:`<span class="av" style="width:32px;height:32px;background:#333;display:grid;place-items:center">＋</span><span>Choose persona</span>`}
+$('pChip').addEventListener('click',()=>{
+  const sel=personaFor(cur)?.id||'';
+  $('dlgT').textContent='Persona';
+  $('dlgB').innerHTML=`<p class="hint" style="margin-top:0">Who are you in this chat with ${esc(cur.name)}?</p><div class="plist">${personas.map(x=>`<button class="pcard${x.id===sel?' sel':''}" data-ps="${esc(x.id)}"><span class="ph" style="background-image:url('${pPic(x)}')"></span><span style="flex:1;min-width:0"><b>${esc(x.name)}${me.defPersona===x.id?'<span class="badge">Default</span>':''}</b><small>${esc(x.gender||'')}</small></span></button>`).join('')}<button class="pcard" data-ps="__new"><span class="ph" style="display:grid;place-items:center;font-size:26px">＋</span><span><b>New persona</b></span></button></div>`;
+  $('dlgA').innerHTML=`<button class="danger" id="dc">Close</button>`;$('dc').onclick=()=>$('dlg').close();
+  $('dlgB').onclick=e=>{const b=e.target.closest('[data-ps]');if(!b)return;$('dlg').close();if(b.dataset.ps==='__new'){openPersona(null);return}cur.personaId=b.dataset.ps;saveChar(cur);renderPChip();toast('You are now '+(getP(cur.personaId)?.name||''))};
+  $('dlg').showModal();
+});
+
 /* ---------- me / settings ---------- */
 function renderMe(){
-  $('meAv').textContent=(me.name||'?')[0].toUpperCase();$('meName').textContent=me.name||'You';
+  const dp=getP(me.defPersona);$('meAv').textContent=((dp&&dp.name)||'?')[0].toUpperCase();if(dp&&pimgs[dp.id]){$('meAv').style.background=`url('${pimgs[dp.id]}') center top/cover`;$('meAv').textContent=''}else $('meAv').style.background='';$('meName').textContent=dp?dp.name:'You';renderPList();
   const total=chars.reduce((a,c)=>a+(c.msgCount||c.msgs.length),0);
   $('meStats').textContent=`${chars.length} character${chars.length===1?"":"s"} · ${total} message${total===1?"":"s"}`;
-  $('meNameIn').value=me.name||'';if(document.activeElement!==$('meAbout'))$('meAbout').value=me.about||'';
   const eng=engine();
   $('engineBox').className='engine'+(eng==='none'?' off':'');
   $('engineTxt').textContent=eng==='claude'?'Using Claude\'s AI (included in your plan, no gems). Maximum memory is on.':eng==='api'?`Free AI chain: ${providers().map(p=>p.name).join(' → ')}`:(IN_CLAUDE?'Connecting to Claude…':'No engine yet: add at least one free key below.');
@@ -910,7 +1001,6 @@ function renderMe(){
   $('speed').innerHTML=`<button type="button" data-sp="fast" aria-pressed="${cfg.speed==='fast'}">Fast</button><button type="button" data-sp="quality" aria-pressed="${cfg.speed==='quality'}">Best quality</button>`;
   $('installTxt').innerHTML=IN_CLAUDE?'This version lives inside Claude and has the best memory. To have an app on your home screen without opening Claude, use the <b>standalone version</b> I sent you in the chat, then move your stories over with Export/Import.':'In Chrome, tap ⋮ → “Add to Home screen” (or “Install app”). It opens full-screen like any other app.';
 }
-$('meSave').addEventListener('click',()=>{me.name=$('meNameIn').value.trim();me.about=$('meAbout').value.trim();saveMe();renderMe();toast('Saved')});
 $('cfgSave').addEventListener('click',()=>{cfg.kMistral=$('kMistral').value.trim();cfg.kGemini=$('kGemini').value.trim();cfg.kOR=$('kOR').value.trim();cfg.base=$('cfgBase').value.trim();cfg.key=$('cfgKey').value.trim();cfg.model=$('cfgModel').value.trim();cfg.cool={};saveCfg();renderMe();toast(engine()==='api'?'Engine ready: '+providers().length+' AI'+(providers().length>1?'s':'')+' in the chain.':'Add at least one key.')});
 $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-sp]');if(!b)return;cfg.speed=b.dataset.sp;saveCfg();renderMe()});
 $('expBtn').addEventListener('click',()=>{
@@ -930,8 +1020,8 @@ $('impBtn').addEventListener('click',()=>{
   $('dc').onclick=()=>$('dlg').close();
   if($('impFile'))$('impFile').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(t=>$('impTxt').value=t)};
   $('dok').onclick=()=>{try{const j=JSON.parse($('impTxt').value);if(j.app!=='historiasIA'||!Array.isArray(j.docs))throw 0;
-      let n=0;for(const {id,data} of j.docs){if(id==='_me'){if(!me.about&&!me.name){me={about:data.about||'',name:data.name||''};saveMe()}continue}write(id,data);
-        if(data.kind==='arch'){const l=arch[data.cid]=arch[data.cid]||[];const i=l.findIndex(x=>x.id===id);i>=0?l[i]={...data,id}:l.push({...data,id})}else if(data.kind==='img')imgs[data.cid]=data.data;else if(data.id){const c=migrate(clone(data));const i=chars.findIndex(x=>x.id===c.id);i>=0?chars[i]=c:chars.push(c);n++}}
+      let n=0;for(const {id,data} of j.docs){if(id==='_me'){if(!me.defPersona&&data.defPersona){me.defPersona=data.defPersona;saveMe()}continue}write(id,data);
+        if(data.kind==='arch'){const l=arch[data.cid]=arch[data.cid]||[];const i=l.findIndex(x=>x.id===id);i>=0?l[i]={...data,id}:l.push({...data,id})}else if(data.kind==='img')imgs[data.cid]=data.data;else if(data.kind==='pimg')pimgs[data.pid]=data.data;else if(data.kind==='persona'){const i=personas.findIndex(x=>x.id===data.id);i>=0?personas[i]=clone(data):personas.push(clone(data))}else if(data.id){const c=migrate(clone(data));const i=chars.findIndex(x=>x.id===c.id);i>=0?chars[i]=c:chars.push(c);n++}}
       $('dlg').close();renderHome();renderMe();toast(n+' characters imported');}
     catch(e){toast('That text isn\'t a valid backup.')}};
   $('dlg').showModal();
@@ -946,6 +1036,7 @@ function ask(title,body,ok,fn){
 let tt;function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',3600)}
 
 /* ---------- boot ---------- */
+if(!IN_CLAUDE&&'serviceWorker' in navigator&&location.protocol==='https:'){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
 renderHome();show('v-home');
 (async()=>{
   let docs=[];
