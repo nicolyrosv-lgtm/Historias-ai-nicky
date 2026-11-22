@@ -126,7 +126,13 @@ button:disabled{opacity:.5;cursor:default}
 .intro{background:#000d;border:1.5px solid #fffc;border-radius:18px;padding:12px 15px;font-size:14px}
 .intro summary{cursor:pointer;list-style:none;font-weight:600}.intro summary::-webkit-details-marker{display:none}
 .intro p{margin:8px 0 0;white-space:pre-wrap;font-size:14px}
-.m{max-width:84%;padding:10px 14px;border-radius:18px;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.m{max-width:84%;padding:10px 14px;border-radius:18px;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;position:relative;transition:outline-color .1s}
+.selmode .m[data-i]{outline:2px solid #fff3;outline-offset:2px;cursor:pointer}
+.selmode .m[data-i].picked{outline:2px solid #fff;background:#3a4c6b}
+.selmode .m[data-i].picked::after{content:"✓";position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#fff;color:#000;font:700 13px/22px Poppins;text-align:center}
+.m.flash{outline:2px solid var(--pink);outline-offset:2px}
+.selbar{position:fixed;left:0;right:0;bottom:0;z-index:9;display:none;padding:12px max(5vw,14px) max(14px,env(safe-area-inset-bottom));background:#141316;border-radius:22px 22px 0 0}
+.selbar .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
 .m.a{background:var(--card);align-self:flex-start;backdrop-filter:blur(4px)}
 .novel .m.a{max-width:100%;font:15px/1.62 Literata,Georgia,serif;padding:12px 15px}
 .novel .m.a em{color:#cfc9d6}.m.a .dl{font-style:normal;color:#fff;font-weight:500}
@@ -363,6 +369,7 @@ dialog::backdrop{background:#000b}
 </div></nav>
 
 <dialog id="dlg"><h3 id="dlgT" style="font-size:22px"></h3><div id="dlgB" style="margin:12px 0 16px;overflow:auto"></div><div class="row" id="dlgA" style="justify-content:flex-end;flex-wrap:wrap"></div></dialog>
+<div class="selbar" id="selBar"><div class="in"><button class="ghost sm" id="selCancel">Cancel</button><button class="go sm" id="selDel">Delete</button></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -541,6 +548,7 @@ function allDocs(){const out=chars.map(c=>({id:c.id,data:c}));for(const k in arc
 const TABS=['v-home','v-chats','v-me'];
 let lastTab='v-home';
 function show(v){
+  if(v!=='v-chat'&&typeof selMode!=='undefined'&&selMode){selMode=false;selSet.clear();$('selBar').style.display='none';$('v-chat').querySelector('.comp').style.visibility=''}
   if(v==='v-ideas'){homeTab='ideas';v='v-home';renderHome()}
   for(const x of document.querySelectorAll('.view'))x.classList.toggle('on',x.id===v);
   const tab=TABS.includes(v);if(tab)lastTab=v;
@@ -768,7 +776,7 @@ function archive(c,ms){
 }
 
 /* ---------- chat ---------- */
-function openChat(id){
+function openChat(id){if(selMode)endSel();
   cur=chars.find(x=>x.id===id);if(!cur)return show('v-home');
   $('scene').style.backgroundImage=`url('${pic(cur)}')`;
   $('chatAv').innerHTML=avHTML(cur,40);$('chatName').textContent=cur.name;
@@ -788,16 +796,16 @@ function avFor(c,name){
   return face({hue:30,name})}
 function splitSpk(t){const parts=t.split(/\[\[([^\]\n]{1,40})\]\]/);if(parts.length<2)return null;const out=[];if(parts[0].trim())out.push({n:'',t:parts[0].trim()});for(let i=1;i<parts.length;i+=2)out.push({n:parts[i].trim(),t:(parts[i+1]||'').trim()});return out}
 function fmtA(t,c){const sp=splitSpk(t);if(!sp)return fmt(t,c.style);return sp.map(x=>`<div class="who"><span class="av" style="width:22px;height:22px;background-image:url('${avFor(c,x.n)}')"></span>${esc(x.n||c.name)}</div>${fmt(x.t,c.style)}`).join('<div style="height:10px"></div>')}
-function bubbleA(m,c){const sp=splitSpk(m.t);if(!sp)return `<div class="m a">${fmt(m.t,c.style)}</div>`;return sp.filter(x=>x.t).map(x=>`<div class="m a"><div class="who"><span class="av" style="width:22px;height:22px;background-image:url('${avFor(c,x.n)}')"></span>${esc(x.n||c.name)}</div>${fmt(x.t,c.style)}</div>`).join('')}
-function bubble(m,c){if(m.hid)return '';if(m.r==='a'&&!/^\s*\(\(/.test(m.t))return bubbleA(m,c);const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</div>`}
+function bubbleA(m,c,i){const sp=splitSpk(m.t);if(!sp)return `<div class="m a" data-i="${i}">${fmt(m.t,c.style)}</div>`;return sp.filter(x=>x.t).map(x=>`<div class="m a" data-i="${i}"><div class="who"><span class="av" style="width:22px;height:22px;background-image:url('${avFor(c,x.n)}')"></span>${esc(x.n||c.name)}</div>${fmt(x.t,c.style)}</div>`).join('')}
+function bubble(m,c,i){if(m.hid)return '';if(m.r==='a'&&!/^\s*\(\(/.test(m.t))return bubbleA(m,c,i);const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}" data-i="${i}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</div>`}
 function renderMsgs(extra=''){
   const c=cur,ms=c.msgs,last=ms.at(-1),n=(c.sagaCount||0)+c.chapters.length;
   let h=c.intro?`<details class="intro dots" ${ms.filter(m=>!m.hid).length>1?'':'open'}><summary><b>Intro</b> ▾</summary><p>${esc(c.intro)}</p></details>`:'';
   if(n)h+=`<div class="chap">${n} earlier chapter${n>1?'s':''} saved in memory</div>`;
-  h+=ms.map(m=>bubble(m,c)).join('')+extra;
+  h+=ms.map((m,i)=>bubble(m,c,i)).join('')+extra;
   if(!busy&&!extra)h+=`<div class="acts2">${ms.length?'<button data-a="cont">⏭ Continue</button>':'<button data-a="open">Begin</button>'}${last&&last.r==='a'&&ms.length>1?'<button data-a="redo">↻ Redo</button>':''}</div>`;
   h+=`<div class="aig">Everything is generated by AI</div>`;
-  $('msgs').innerHTML=h;window.scrollTo(0,document.body.scrollHeight);
+  $('msgs').innerHTML=h;$('msgs').classList.toggle('selmode',selMode);if(selMode)for(const el of $('msgs').querySelectorAll('.m[data-i]'))el.classList.toggle('picked',selSet.has(+el.dataset.i));window.scrollTo(0,document.body.scrollHeight);
 }
 $('msgs').addEventListener('click',e=>{
   const a=e.target.closest('[data-a]')?.dataset.a;if(!a||busy)return;const c=cur;
@@ -892,6 +900,81 @@ $('bulb').addEventListener('click',async()=>{
   b.disabled=false;window.scrollTo(0,document.body.scrollHeight);
 });
 $('sugg').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled){$('inp').value=b.textContent;autosize();$('sugg').innerHTML='';$('inp').focus()}});
+
+/* ---------- message actions: copy, edit, select, delete ---------- */
+let selMode=false,selSet=new Set(),lpTimer=null,lpFired=false;
+function msgMenu(i){
+  const c=cur,m=c.msgs[i];if(!m)return;
+  for(const el of $('msgs').querySelectorAll(`.m[data-i="${i}"]`))el.classList.add('flash');
+  $('dlgT').textContent=m.r==='u'?'Your message':'Message';
+  $('dlgB').innerHTML=`<div class="sheet"><button data-ma="copy"><b>Copy</b><span>Copy the text</span></button><button data-ma="edit"><b>Edit</b><span>Change what it says</span></button><button data-ma="select"><b>Select</b><span>Pick several messages to delete</span></button><button data-ma="del"><b style="color:var(--red)">Delete</b><span>Remove it and make the AI forget it</span></button></div>`;
+  $('dlgA').innerHTML=`<button class="danger" id="dc">Close</button>`;
+  const unflash=()=>{for(const el of $('msgs').querySelectorAll('.m.flash'))el.classList.remove('flash')};
+  $('dc').onclick=()=>{$('dlg').close();unflash()};
+  $('dlgB').onclick=async e=>{const b=e.target.closest('[data-ma]');if(!b)return;const a=b.dataset.ma;unflash();
+    if(a==='copy'){try{await navigator.clipboard.writeText(m.t.replace(/\[\[([^\]]+)\]\]\s*/g,'$1: '));toast('Copied')}catch(err){toast('Couldn\'t copy.')}$('dlg').close()}
+    else if(a==='edit')editMsg(i);
+    else if(a==='select'){$('dlg').close();startSel(i)}
+    else if(a==='del'){$('dlg').close();deleteMsgs([i])}};
+  $('dlg').showModal();
+}
+function editMsg(i){
+  const c=cur,m=c.msgs[i];
+  $('dlgT').textContent='Edit message';
+  $('dlgB').innerHTML=`<div class="box"><textarea id="emTxt" class="tall" style="min-height:220px">${esc(m.t)}</textarea></div>`;
+  $('dlgA').innerHTML=`<button class="danger" id="dc">Cancel</button><button class="go sm" id="dok">Save</button>`;
+  $('dc').onclick=()=>$('dlg').close();
+  $('dok').onclick=()=>{const t=$('emTxt').value.trim();if(!t){toast('Empty message: use Delete instead.');return}m.t=t;m.edited=1;saveChar(c);$('dlg').close();renderMsgs();toast('Message updated')};
+  if(!$('dlg').open)$('dlg').showModal();
+}
+function startSel(i){selMode=true;selSet=new Set(i==null?[]:[i]);$('selBar').style.display='block';$('v-chat').querySelector('.comp').style.visibility='hidden';updSel();renderMsgs()}
+function endSel(){selMode=false;selSet.clear();$('selBar').style.display='none';$('v-chat').querySelector('.comp').style.visibility='';renderMsgs()}
+function updSel(){$('selDel').textContent=selSet.size?`Delete (${selSet.size})`:'Delete';$('selDel').disabled=!selSet.size}
+$('selCancel').addEventListener('click',endSel);
+$('selDel').addEventListener('click',()=>{const ids=[...selSet];endSel();deleteMsgs(ids)});
+$('msgs').addEventListener('contextmenu',e=>{const el=e.target.closest('.m[data-i]');if(!el||busy)return;e.preventDefault();if(!selMode&&!lpFired)msgMenu(+el.dataset.i);lpFired=false});
+$('msgs').addEventListener('pointerdown',e=>{const el=e.target.closest('.m[data-i]');if(!el||selMode||busy)return;lpFired=false;clearTimeout(lpTimer);lpTimer=setTimeout(()=>{lpFired=true;msgMenu(+el.dataset.i)},550)});
+for(const ev of ['pointerup','pointercancel','pointerleave'])$('msgs').addEventListener(ev,()=>clearTimeout(lpTimer));
+$('msgs').addEventListener('scroll',()=>clearTimeout(lpTimer),{passive:true});
+window.addEventListener('scroll',()=>clearTimeout(lpTimer),{passive:true});
+$('msgs').addEventListener('click',e=>{if(!selMode)return;const el=e.target.closest('.m[data-i]');if(!el)return;const i=+el.dataset.i;selSet.has(i)?selSet.delete(i):selSet.add(i);updSel();renderMsgs()},true);
+function deleteMsgs(ids){
+  const c=cur;const del=new Set(ids);
+  // a hidden instruction right before a deleted reply goes too
+  for(const i of ids){const p=c.msgs[i-1];if(p&&p.hid&&c.msgs[i]&&c.msgs[i].r==='a')del.add(i-1)}
+  const removed=c.msgs.filter((m,i)=>del.has(i));if(!removed.length)return;
+  ask(removed.filter(m=>!m.hid).length>1?`Delete ${removed.filter(m=>!m.hid).length} messages?`:'Delete this message?','They disappear from the chat and the AI forgets them, including anything it wrote down in its memory about them.','Delete',()=>{
+    c.msgs=c.msgs.filter((m,i)=>!del.has(i));saveChar(c);renderMsgs();
+    toast(engine()==='none'?'Deleted.':'Deleted. Cleaning the AI\'s memory…');forget(c,removed);
+  });
+}
+function forget(c,removed){
+  if(engine()==='none')return;
+  mq=mq.then(async()=>{try{
+    const txt=transcript(c,removed.filter(m=>!m.hid));if(!txt.trim())return;
+    const ts=removed.map(m=>m.at);let prev=0;const hit=[];
+    c.chapters.forEach((ch,i)=>{if(ts.some(t=>t>prev&&t<=ch.upTo))hit.push(i);prev=ch.upTo});
+    if(!c.facts&&!c.bible&&!hit.length)return;
+    const t=await llm({prompt:`The user DELETED these messages from the interactive story “${c.name}”. As far as the story is concerned they never happened.
+DELETED MESSAGES:
+${txt}
+
+CURRENT MEMORY
+[FACTS]
+${c.facts||'(empty)'}
+[BIBLE]
+${c.bible||'(empty)'}
+${hit.length?'[CHAPTERS THAT COVER THEM]\n'+hit.map(i=>`#${i}: ${c.chapters[i].t}`).join('\n'):''}
+
+Remove from the memory every fact, event, line or change that comes ONLY from the deleted messages, and undo what they changed (restore the previous state where you can infer it). Keep everything that is also supported by other events. Do not add anything new.
+Return ONLY JSON: {"facts":"...","bible":"...","chapters":[{"i":number,"text":"..."}]} (chapters only for the numbers listed).`},{tier:MEM_TIER,mem:true,temp:.2,max:4000});
+    const j=parseJSON(t);if(!j)return;
+    if(typeof j.facts==='string')c.facts=j.facts.trim().slice(0,8000);
+    if(typeof j.bible==='string')c.bible=j.bible.trim().slice(0,20000);
+    if(Array.isArray(j.chapters))for(const x of j.chapters){if(hit.includes(x.i)&&typeof x.text==='string'&&x.text.trim())c.chapters[x.i].t=x.text.trim().slice(0,4000)}
+    saveChar(c);if(cur===c)toast('Memory cleaned');
+  }catch(e){}});
+}
 
 /* ---------- memory engine (maximum) ---------- */
 let mq=Promise.resolve();
