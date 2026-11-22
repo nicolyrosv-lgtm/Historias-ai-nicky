@@ -549,7 +549,23 @@ function show(v){
   for(const b of document.querySelectorAll('[data-tab]'))b.setAttribute('aria-current',String(b.dataset.tab===act));
   if(v==='v-chats')renderChats();if(v==='v-me')renderMe();
   window.scrollTo(0,v==='v-chat'?document.body.scrollHeight:0);
+  if(!navPop){const want=v.slice(2);if(location.hash.slice(1)!==want){try{if(['edit','img','persona'].includes(location.hash.slice(1)))history.replaceState(null,'','#'+want);else location.hash=want}catch(e){}}}
 }
+/* Android back button: move between screens instead of leaving the app */
+let navPop=false,exitTry=0;
+const NEEDS_CUR=['v-chat','v-mem','v-read'];
+window.addEventListener('hashchange',()=>{
+  const h=location.hash.slice(1);
+  if($('dlg').open){$('dlg').close();const on=document.querySelector('.view.on');if(on&&h!==on.id.slice(2)){navPop=true;location.hash=on.id.slice(2);navPop=false}return}
+  if(h==='root'||h===''){
+    if(Date.now()-exitTry<2500){history.back();return}
+    exitTry=Date.now();toast('Press back again to exit');
+    navPop=true;homeTab='mine';renderHome();show('v-home');navPop=false;location.hash='home';return}
+  let v='v-'+h;const el=$(v);if(!el||!el.classList.contains('view'))return;if(el.classList.contains('on'))return;
+  if((NEEDS_CUR.includes(v)&&!cur)||(v==='v-edit'&&!draft)||(v==='v-persona'&&!editP))v='v-home';
+  navPop=true;
+  try{if(v==='v-chat')openChat(cur.id);else if(v==='v-mem'){renderMem();show(v)}else{if(v==='v-home')renderHome();show(v)}}finally{navPop=false}
+});
 $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;if(b.dataset.tab==='v-home'){homeTab='mine';renderHome()}show(b.dataset.tab)});
 document.addEventListener('click',e=>{if(e.target.closest('[data-back]')){renderHome();show(lastTab)}});
 $('plusBtn').addEventListener('click',()=>{
@@ -1101,7 +1117,8 @@ let tt;function toast(m){const t=$('toast');t.textContent=m;t.style.display='blo
 if(window.visualViewport){const vv=window.visualViewport;const fit=()=>{if(document.activeElement===$('inp')&&$('v-chat').classList.contains('on'))requestAnimationFrame(()=>window.scrollTo(0,document.body.scrollHeight))};vv.addEventListener('resize',fit)}
 $('inp').addEventListener('focus',()=>setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),300));
 if(!IN_CLAUDE&&'serviceWorker' in navigator&&location.protocol==='https:'){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
-renderHome();show('v-home');
+navPop=true;renderHome();show('v-home');navPop=false;
+const navInit=()=>setTimeout(()=>{try{history.replaceState(null,'','#root');history.pushState(null,'','#home')}catch(e){}},50);if(document.readyState==='complete')navInit();else window.addEventListener('load',navInit);
 (async()=>{
   let docs=[];
   try{docs=await local.all()}catch(e){memOnly=true}
