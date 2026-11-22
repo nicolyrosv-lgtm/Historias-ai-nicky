@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content">
 <meta name="theme-color" content="#0b0a0c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,7 +20,7 @@
    LAYOUT: phone shell with bottom tab bar (Para ti · Chats · ＋ · Yo), max 760px, sticky top and composer. */
 :root{color-scheme:dark;--bg:#0b0a0c;--panel:#1a191c;--field:#000;--ink:#f4f1f3;--mute:#9a95a0;--red:#ff1744;--pink:#f45fd6;--line:#2e2c32;--card:rgba(38,37,44,.88)}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Poppins,system-ui,sans-serif;overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Poppins,system-ui,sans-serif;overflow-x:clip}
 h1,h2,h3{margin:0;line-height:1.08;text-wrap:balance;font-weight:700}
 .big-t{font-family:Anton,Poppins,sans-serif;font-weight:400;letter-spacing:.2px;position:relative;display:inline-block}
 .big-t.u::after{content:"";position:absolute;left:8%;right:-4%;bottom:2px;height:9px;background:var(--red);border-radius:9px;transform:rotate(-4deg);z-index:-1}
@@ -72,9 +72,9 @@ button:disabled{opacity:.5;cursor:default}
 .meav{width:78px;height:78px;border-radius:50%;background:#fff2;display:grid;place-items:center;font:400 34px Anton;flex:none;border:3px solid #ffd54a}
 .sect{padding:16px max(4vw,16px);display:grid;gap:12px;border-bottom:1px solid var(--line)}
 .sect h3{font-size:18px}
-.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:8px 10px}
-.top .t{flex:1}.top b{font-size:17px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top small{color:var(--mute);font-size:12.5px}
-.ib{min-width:44px;padding:0 10px;display:grid;place-items:center;font-size:14px;font-weight:600}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;padding:8px 12px;background:linear-gradient(180deg,#000c,#0000)}
+.top .t{flex:1}.top b{font-size:15px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top small{color:var(--mute);font-size:12.5px}
+.ib{min-width:40px;min-height:40px;padding:0 10px;display:grid;place-items:center;font-size:13px;font-weight:600}
 .ib.big{font-size:30px;padding:0;font-weight:400}
 .pill{background:#0009;border:1px solid #fff2;backdrop-filter:blur(6px)}
 .av{flex:none;border-radius:50%;display:block;background-size:cover;background-position:center top}
@@ -122,31 +122,31 @@ button:disabled{opacity:.5;cursor:default}
 /* chat */
 .scene{position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center top}
 .scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#000a,#0006 30%,#000c)}
-.msgs{flex:1;padding:10px max(4vw,12px) 8px;display:flex;flex-direction:column;gap:12px}
-.intro{background:#000d;border:2px solid #fff;border-radius:22px;padding:16px 18px}
+.msgs{flex:1;padding:8px max(6vw,18px) 8px;display:flex;flex-direction:column;gap:10px}
+.intro{background:#000d;border:1.5px solid #fffc;border-radius:18px;padding:12px 15px;font-size:14px}
 .intro summary{cursor:pointer;list-style:none;font-weight:600}.intro summary::-webkit-details-marker{display:none}
-.intro p{margin:10px 0 0;white-space:pre-wrap;font-size:15.5px}
-.m{max-width:88%;padding:14px 18px;border-radius:22px;white-space:pre-wrap;overflow-wrap:anywhere}
+.intro p{margin:8px 0 0;white-space:pre-wrap;font-size:14px}
+.m{max-width:84%;padding:10px 14px;border-radius:18px;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
 .m.a{background:var(--card);align-self:flex-start;backdrop-filter:blur(4px)}
-.novel .m.a{max-width:100%;font:17px/1.75 Literata,Georgia,serif}
+.novel .m.a{max-width:100%;font:15px/1.62 Literata,Georgia,serif;padding:12px 15px}
 .novel .m.a em{color:#cfc9d6}.m.a .dl{font-style:normal;color:#fff;font-weight:500}
 .m.u em.act{color:#b9c6dc}
 .m.u{background:#26344d;border:1px solid #3a4c6b;color:#eef2f8;align-self:flex-end;border-bottom-right-radius:6px}
 .m.ooc{background:#0008;border:1px dashed #fff4;color:var(--mute);font-size:14px}
 .m.err{background:#0009;border:1px solid var(--red);color:#ffb3c0}
 .acts2{display:flex;gap:8px;align-self:flex-start;flex-wrap:wrap}
-.acts2 button{background:#0009;border:1.5px solid var(--red);min-height:40px;font-size:14px;font-weight:600}
+.acts2 button{background:#0009;border:1.5px solid var(--red);min-height:34px;font-size:13px;font-weight:600;padding:0 14px}
 .chap{align-self:center;color:#ccc;font-size:12.5px;padding:5px 12px;border-radius:12px;background:#0008}
 .aig{text-align:center;color:#c9c4cf;font-size:12.5px;padding:2px 0 6px}
 .typing span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#ccc;animation:b 1s infinite}
 .typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
 @keyframes b{50%{transform:translateY(-5px);opacity:.5}}
 @media(prefers-reduced-motion:reduce){.typing span{animation:none}}
-.sugg{display:flex;flex-direction:column;gap:6px;padding:0 max(4vw,12px) 8px}
+.sugg{display:flex;flex-direction:column;gap:6px;padding:0 max(5vw,14px) 8px}
 .sugg button{background:#000c;border:1px solid #fff3;border-radius:16px;text-align:start;padding:10px 14px;font-size:14.5px}
-.comp{position:sticky;bottom:0;display:flex;gap:8px;align-items:flex-end;padding:10px max(3vw,10px) max(10px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#000 40%)}
-.comp textarea{flex:1;resize:none;border:1.5px solid #fff3;border-radius:28px;padding:13px 20px;font-size:16px;background:#0b0a0cdd;max-height:160px;color:var(--ink)}
-.round{width:50px;height:50px;min-height:50px;padding:0;border-radius:50%;display:grid;place-items:center;border:1.5px solid #fff3;background:#0b0a0cdd;flex:none;font-size:20px}
+.comp{position:sticky;bottom:0;display:flex;gap:8px;align-items:flex-end;padding:8px max(5vw,14px) max(10px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#000 40%)}
+.comp textarea{flex:1;resize:none;border:1.5px solid #fff3;border-radius:24px;padding:10px 16px;font-size:16px;background:#0b0a0cdd;max-height:160px;color:var(--ink)}
+.round{width:44px;height:44px;min-height:44px;font-size:17px;padding:0;border-radius:50%;display:grid;place-items:center;border:1.5px solid #fff3;background:#0b0a0cdd;flex:none;font-size:20px}
 .round.send{background:var(--red);border-color:var(--red)}
 .pad{padding:12px max(5vw,16px) 40px;display:grid;gap:18px}
 .memstat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -156,7 +156,13 @@ button:disabled{opacity:.5;cursor:default}
 .chlist p{white-space:pre-wrap;font:15px/1.65 Literata,Georgia,serif;margin:8px 0 0;color:#ddd}
 .book{padding:20px max(6vw,18px) 60px;font:17px/1.8 Literata,Georgia,serif}
 .book p{margin:0 0 14px;white-space:pre-wrap}.book .you{color:#9fb4d6}
-.pchip{display:flex;align-items:center;gap:8px;margin:0 max(3vw,10px) 0;background:#0b0a0cdd;border:1.5px solid #fff3;border-radius:999px;padding:4px 14px 4px 4px;min-height:40px;font-size:14px;font-weight:600;align-self:flex-start;max-width:70%}
+.chiprow{display:flex;gap:8px;padding:0 max(5vw,14px);flex-wrap:wrap}
+.chiprow .pchip{margin:0;max-width:60%}
+.stack{display:flex}.stack .av{border:2px solid #0b0a0c;margin-inline-start:-10px}.stack .av:first-child{margin:0}
+.who{display:flex;align-items:center;gap:7px;font:600 12.5px Poppins,sans-serif;color:#ddd;margin:2px 0 4px}
+.chk{width:22px;height:22px;border-radius:50%;border:2px solid #fff6;flex:none;display:grid;place-items:center;font-size:13px}
+.pcard.sel .chk{background:#fff;color:#000;border-color:#fff}
+.pchip{display:flex;align-items:center;gap:8px;margin:0 max(3vw,10px) 0;background:#0b0a0cdd;border:1.5px solid #fff3;border-radius:999px;padding:3px 12px 3px 3px;min-height:34px;font-size:13px;font-weight:600;align-self:flex-start;max-width:70%}
 .pchip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plist{display:grid;gap:10px}
 .pcard{display:flex;align-items:center;gap:14px;background:var(--panel);border-radius:18px;padding:12px;text-align:start;width:100%;min-height:76px;border:1.5px solid transparent}
@@ -302,7 +308,7 @@ dialog::backdrop{background:#000b}
   </div>
   <div class="msgs" id="msgs" aria-live="polite"></div>
   <div class="sugg" id="sugg"></div>
-  <button class="pchip" id="pChip" aria-label="Choose your persona"></button>
+  <div class="chiprow"><button class="pchip" id="pChip" aria-label="Choose your persona"></button><button class="pchip" id="rChip" aria-label="Choose who responds"></button></div>
   <div class="comp">
     <textarea id="inp" rows="1" placeholder="Say something to me!" aria-label="Message"></textarea>
     <button class="round" id="bulb" aria-label="Suggest replies">💡</button>
@@ -753,9 +759,21 @@ function openChat(id){
   const n=(cur.sagaCount||0)+cur.chapters.length;$('chatSub').textContent='LV'+lvl(cur)+' · Chapter '+(n+1);
   $('v-chat').classList.toggle('novel',cur.style==='novel');
   if(!cur.personaId&&me.defPersona){cur.personaId=me.defPersona}
-  renderPChip();$('sugg').innerHTML='';renderMsgs();show('v-chat');
+  renderPChip();renderRChip();$('sugg').innerHTML='';renderMsgs();show('v-chat');
 }
-function bubble(m,c){if(m.hid)return '';const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</div>`}
+const NARR_IMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="#8b5cf6"/><rect x="9" y="11" width="22" height="15" rx="4" fill="#fff"/><path d="M14 26l-2 5 6-5z" fill="#fff"/></svg>');
+function castOf(c){return c.cast||[]}
+function avFor(c,name){
+  const n=(name||'').trim().toLowerCase();
+  if(!n||n===c.name.toLowerCase()||c.name.toLowerCase().split(' ').includes(n))return pic(c);
+  if(n==='narrator')return NARR_IMG;
+  const x=castOf(c).find(k=>k.name.toLowerCase()===n||k.name.toLowerCase().split(' ')[0]===n.split(' ')[0]);
+  if(x){if(x.refId){const rc=chars.find(z=>z.id===x.refId);if(rc)return pic(rc)}if(imgs[c.id+'_'+x.id])return imgs[c.id+'_'+x.id];return face({hue:200,name:x.name})}
+  return face({hue:30,name})}
+function splitSpk(t){const parts=t.split(/\[\[([^\]\n]{1,40})\]\]/);if(parts.length<2)return null;const out=[];if(parts[0].trim())out.push({n:'',t:parts[0].trim()});for(let i=1;i<parts.length;i+=2)out.push({n:parts[i].trim(),t:(parts[i+1]||'').trim()});return out}
+function fmtA(t,c){const sp=splitSpk(t);if(!sp)return fmt(t,c.style);return sp.map(x=>`<div class="who"><span class="av" style="width:22px;height:22px;background-image:url('${avFor(c,x.n)}')"></span>${esc(x.n||c.name)}</div>${fmt(x.t,c.style)}`).join('<div style="height:10px"></div>')}
+function bubbleA(m,c){const sp=splitSpk(m.t);if(!sp)return `<div class="m a">${fmt(m.t,c.style)}</div>`;return sp.filter(x=>x.t).map(x=>`<div class="m a"><div class="who"><span class="av" style="width:22px;height:22px;background-image:url('${avFor(c,x.n)}')"></span>${esc(x.n||c.name)}</div>${fmt(x.t,c.style)}</div>`).join('')}
+function bubble(m,c){if(m.hid)return '';if(m.r==='a'&&!/^\s*\(\(/.test(m.t))return bubbleA(m,c);const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</div>`}
 function renderMsgs(extra=''){
   const c=cur,ms=c.msgs,last=ms.at(-1),n=(c.sagaCount||0)+c.chapters.length;
   let h=c.intro?`<details class="intro dots" ${ms.filter(m=>!m.hid).length>1?'':'open'}><summary><b>Intro</b> ▾</summary><p>${esc(c.intro)}</p></details>`:'';
@@ -796,6 +814,10 @@ How they treat the user: ${c.att.join(', ')||'according to their personality'}.
 Rules they never break:
 ${c.rules||'(none extra)'}
 Hold this character firmly in every message. If they are cruel, arrogant, cold, mocking, jealous or a total jerk to the user, make it real and specific: provoke the user, make them rage, and don't soften or apologize unless the story has slowly earned it (slow burn). If they are sweet, make them melt the user's heart. Never switch personality abruptly.`}
+function activeResp(c){const a=[];if(c.respMain!==false)a.push(c.name);if(c.respNarr)a.push('Narrator');for(const x of castOf(c))if(x.on)a.push(x.name);if(!a.length)a.push(c.name);return a}
+function castBlock(c){const cs=castOf(c);if(!cs.length)return '';return '\nOTHER CHARACTERS IN THIS STORY (keep each one consistent):\n'+cs.map(x=>{const rc=x.refId&&chars.find(z=>z.id===x.refId);const d=rc?`${rc.age?rc.age+' y/o, ':''}${rc.gender||''}. ${rc.details}`:x.details;return `- ${x.name}: ${(d||'').slice(0,1500)}`}).join('\n')}
+function respBlock(c){const a=activeResp(c);if(a.length===1&&a[0]===c.name)return '';
+  return `\nWHO RESPONDS IN THIS REPLY: ${a.join(', ')}.\nWrite a part for each of them, in a natural order, reacting to the user and to each other. Start every part on its own line with the speaker's name in double brackets, exactly like [[${a[0]}]], then that part (their actions and narration, with their spoken words in double quotes). Use [[Narrator]] only for narration of the scene and of characters who are not listed. Do not write parts for anyone not listed, and never for the user's character.`}
 function sys(c){
   const card=`MAIN CHARACTER CARD
 Name: ${c.name}${c.age?' · Age: '+c.age:''}${c.gender?' · Gender: '+c.gender:''}
@@ -810,12 +832,13 @@ ${charBlock(c)}`;
 ${card}
 Style: novel prose in natural English, sensory and concrete. Narrate in second person (“you”) what the user perceives, and in third person for everyone else. Narration is plain text and ALL spoken dialogue goes inside double quotes “ ”. Give every character their own voice, motives and secrets; the world moves even when the user doesn't. Never decide what the user does, says, thinks or feels. End every reply on a moment that invites a response. Length: ${L}. Always write in English, even if the card or memory contains another language.
 ${FREE}
+${castBlock(c)}${respBlock(c)}
 ${memBlock(c)}`;
   }
   return `You are ${c.name}. Play this character naturally and consistently in a private chat.
 ${card}
 Style: speak in first person like a phone chat, short messages (1-4 sentences); you may describe brief actions between asterisks *like this*. Bring up things from past conversations when it fits. Always reply in English.
-${FREE}
+${FREE}${castBlock(c)}${respBlock(c)}
 ${memBlock(c)}`;
 }
 const RAW_API=200;function rawWin(){return engine()==='api'?RAW_API:RAW_BASE}
@@ -833,7 +856,7 @@ async function generate(c,userText,visible){
   if(cur===c)renderMsgs(`<div class="m a" id="live"><span class="typing"><span></span><span></span><span></span></span></div>`);
   ctrl=new AbortController();let txt='';
   const done=()=>{busy=false;$('send').textContent='➤';$('send').setAttribute('aria-label','Send');ctrl=null};
-  try{txt=await llm(chatReq(c),{signal:ctrl.signal,max:c.len==='l'?2600:1800,onText:t=>{txt=t;const l=$('live');if(l)l.innerHTML=fmt(t,c.style);window.scrollTo(0,document.body.scrollHeight)}})}
+  try{txt=await llm(chatReq(c),{signal:ctrl.signal,max:c.len==='l'?2600:1800,onText:t=>{txt=t;const l=$('live');if(l)l.innerHTML=fmtA(t,c);window.scrollTo(0,document.body.scrollHeight)}})}
   catch(e){if(e&&e.text)txt=e.text;if(!txt){if(userText)c.msgs.pop();done();if(cur===c)renderMsgs(`<div class="m err">${esc(errMsg(e))}</div>`);if(visible&&userText)$('inp').value=userText;return}}
   c.msgs.push({r:'a',t:txt.trim(),at:Date.now()});
   done();if(cur===c)renderMsgs();
@@ -926,7 +949,7 @@ $('memNow').addEventListener('click',async()=>{if(engine()==='none'){noAI();retu
 $('readBtn').addEventListener('click',()=>{
   const c=cur,all=[...(arch[c.id]||[]).flatMap(a=>a.msgs),...c.msgs].filter(m=>!m.hid);
   $('readTitle').textContent=c.name;
-  $('book').innerHTML=(c.intro?`<p style="color:var(--mute)">${esc(c.intro)}</p>`:'')+(all.length?all.map(m=>`<p class="${m.r==='u'?'you':''}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</p>`).join(''):'<p class="you">Nothing written yet.</p>');
+  $('book').innerHTML=(c.intro?`<p style="color:var(--mute)">${esc(c.intro)}</p>`:'')+(all.length?all.map(m=>`<p class="${m.r==='u'?'you':''}">${m.r==='a'?fmtA(m.t,c):fmtU(m.t)}</p>`).join(''):'<p class="you">Nothing written yet.</p>');
   show('v-read');
 });
 $('back4').addEventListener('click',()=>{renderMem();show('v-mem')});
@@ -985,6 +1008,45 @@ $('pChip').addEventListener('click',()=>{
   $('dlg').showModal();
 });
 
+/* ---------- responders ---------- */
+function renderRChip(){const a=activeResp(cur);$('rChip').innerHTML=`<span class="stack">${a.slice(0,3).map(n=>`<span class="av" style="width:28px;height:28px;background-image:url('${avFor(cur,n)}')"></span>`).join('')}</span><span>${a.length===1?esc(a[0]):a.length+' responders'}</span>`}
+function respSheet(){
+  const c=cur,cs=castOf(c);
+  const row=(key,name,img,on,extra='')=>`<div class="pcard${on?' sel':''}" data-rk="${esc(key)}" role="button" tabindex="0"><span class="ph" style="background-image:url('${img}')"></span><span style="flex:1;min-width:0"><b>${esc(name)}</b><small>${extra}</small></span>${key.startsWith('x:')?`<button class="del" data-rx="${esc(key.slice(2))}" aria-label="Remove">✕</button>`:''}<span class="chk">${on?'✓':''}</span></div>`;
+  $('dlgT').textContent='Choose responders';
+  $('dlgB').innerHTML=`<p class="hint" style="margin-top:0">Tick everyone who should reply. With several ticked, each one gets their own part in every reply.</p><div class="plist">${row('main',c.name,pic(c),c.respMain!==false,'Main character')}${row('narr','Narrator',NARR_IMG,!!c.respNarr,'Describes the scene and side characters')}${cs.map(x=>row('x:'+x.id,x.name,avFor(c,x.name),!!x.on,x.refId?'Your character':'Side character')).join('')}<button class="pcard" id="addCast"><span class="ph" style="display:grid;place-items:center;font-size:26px">＋</span><span><b>Add character</b><small>One of yours, or a new side character</small></span></button></div>`;
+  $('dlgA').innerHTML=`<button class="go sm" id="dok">Confirm</button>`;
+  $('dok').onclick=()=>{if(!activeResp(c).length)c.respMain=true;saveChar(c);renderRChip();$('dlg').close()};
+  $('dlgB').onclick=e=>{
+    const rx=e.target.closest('[data-rx]');if(rx){c.cast=cs.filter(x=>x.id!==rx.dataset.rx);if(imgs[c.id+'_'+rx.dataset.rx]){delete imgs[c.id+'_'+rx.dataset.rx];write('img_'+c.id+'_'+rx.dataset.rx,null)}respSheet();return}
+    if(e.target.closest('#addCast')){castAdd();return}
+    const r=e.target.closest('[data-rk]');if(!r)return;const k=r.dataset.rk;
+    if(k==='main')c.respMain=c.respMain===false;else if(k==='narr')c.respNarr=!c.respNarr;else{const x=cs.find(z=>z.id===k.slice(2));if(x)x.on=!x.on}
+    respSheet();
+  };
+  if(!$('dlg').open)$('dlg').showModal();
+}
+function castAdd(){
+  const c=cur,others=chars.filter(z=>z.id!==c.id&&!castOf(c).some(x=>x.refId===z.id));
+  $('dlgT').textContent='Add character';
+  $('dlgB').innerHTML=`${others.length?`<p class="hint" style="margin-top:0">From your characters</p><div class="plist">${others.map(z=>`<button class="pcard" data-ref="${esc(z.id)}"><span class="ph" style="background-image:url('${pic(z)}')"></span><span><b>${esc(z.name)}</b><small>${esc((z.gender||'')+(z.age?', '+z.age:''))}</small></span></button>`).join('')}</div>`:''}
+  <p class="hint">Or a new side character just for this story</p>
+  <div class="box"><input id="npcName" maxlength="40" placeholder="Name"></div>
+  <div class="box" style="margin-top:8px"><textarea id="npcDet" maxlength="2000" placeholder="Who they are, looks, personality, relationship with the others…" style="min-height:90px"></textarea></div>
+  <div class="row" style="margin-top:8px"><button class="ghost sm" id="npcPick" style="flex:1;font-size:14px">Add photo</button><div class="paste" id="npcPaste" contenteditable="true" style="flex:1;min-height:46px"></div></div>
+  <input type="file" id="npcImg" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><p class="hint" id="npcOk" style="margin:6px 0 0"></p>`;
+  let npcImg=null;
+  const take=async f=>{const d=await readImg(f,500);if(d){npcImg=d;$('npcOk').textContent='Photo ready ✓'}};
+  $('npcPick').onclick=()=>{try{$('npcImg').click()}catch(e){}};$('npcImg').onchange=e=>{take(e.target.files&&e.target.files[0]);e.target.value=''};wirePaste($('npcPaste'),take);
+  $('dlgA').innerHTML=`<button class="danger" id="dc">Back</button><button class="go sm" id="dok">Add</button>`;
+  $('dc').onclick=()=>respSheet();
+  $('dlgB').onclick=e=>{const b=e.target.closest('[data-ref]');if(!b)return;const z=chars.find(q=>q.id===b.dataset.ref);c.cast=[...castOf(c),{id:'k'+Date.now().toString(36),name:z.name,refId:z.id,on:true}];respSheet()};
+  $('dok').onclick=()=>{const n=$('npcName').value.trim();if(!n){toast('Give them a name, or pick one of your characters.');return}
+    const x={id:'k'+Date.now().toString(36),name:n,details:$('npcDet').value.trim(),on:true};c.cast=[...castOf(c),x];
+    if(npcImg){imgs[c.id+'_'+x.id]=npcImg;write('img_'+c.id+'_'+x.id,{kind:'img',cid:c.id+'_'+x.id,data:npcImg})}respSheet()};
+}
+$('rChip').addEventListener('click',()=>respSheet());
+
 /* ---------- me / settings ---------- */
 function renderMe(){
   const dp=getP(me.defPersona);$('meAv').textContent=((dp&&dp.name)||'?')[0].toUpperCase();if(dp&&pimgs[dp.id]){$('meAv').style.background=`url('${pimgs[dp.id]}') center top/cover`;$('meAv').textContent=''}else $('meAv').style.background='';$('meName').textContent=dp?dp.name:'You';renderPList();
@@ -1036,6 +1098,8 @@ function ask(title,body,ok,fn){
 let tt;function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',3600)}
 
 /* ---------- boot ---------- */
+if(window.visualViewport){const vv=window.visualViewport;const fit=()=>{if(document.activeElement===$('inp')&&$('v-chat').classList.contains('on'))requestAnimationFrame(()=>window.scrollTo(0,document.body.scrollHeight))};vv.addEventListener('resize',fit)}
+$('inp').addEventListener('focus',()=>setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),300));
 if(!IN_CLAUDE&&'serviceWorker' in navigator&&location.protocol==='https:'){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
 renderHome();show('v-home');
 (async()=>{
