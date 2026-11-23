@@ -436,6 +436,7 @@ let chars=[],arch={},imgs={},me={about:'',name:''},cur=null,draft=null,draftImg=
 let cfg={};try{cfg=JSON.parse(localStorage.getItem('historiasIA.cfg')||'{}')}catch(e){}
 const saveCfg=()=>{try{localStorage.setItem('historiasIA.cfg',JSON.stringify(cfg))}catch(e){}};
 cfg.speed=cfg.speed||'fast';
+if(!cfg.coolFix1){cfg.cool={};cfg.coolFix1=1;try{localStorage.setItem('historiasIA.cfg',JSON.stringify(cfg))}catch(e){}}
 
 /* ---------- AI engine ---------- */
 const GEM='https://generativelanguage.googleapis.com/v1beta/openai';
@@ -502,14 +503,25 @@ async function llm(req,o={}){
         lastErr=e;
         if(o.onText)o.onText('');
         if(e.code==='rate_limited'&&attempt===0&&p.id==='mistral'){await sleep(1600);continue}   // Mistral free = 1 request per second
-        if(e.code==='rate_limited')cool(p.id,/day|daily|quota|month/i.test(e.message||'')?6*3600e3:p.id==='mistral'?60e3:10*60e3);
+        if(e.code==='rate_limited'&&attempt===0&&/upstream|temporarily|per.?minute|PerMinute|rpm\b/i.test(e.message||'')){await sleep(2500);continue}
+        if(e.code==='rate_limited')cool(p.id,restFor(e.message||''));
         else if(e.code==='bad_key'||e.code==='no_credit')cool(p.id,30*60e3);
         else if(e.code==='server'||e.code==='network')cool(p.id,2*60e3);
         break;
       }
     }
   }
+  // every AI is resting: if one wakes up within ~75 s, wait for it instead of failing
+  if(lastErr&&lastErr.code==='rate_limited'&&!o._retried){
+    const soon=list.map(p=>(cfg.cool&&cfg.cool[p.id]||0)-Date.now()).filter(ms=>ms>0).sort((a,b)=>a-b)[0];
+    if(soon!=null&&soon<=75e3){if(o.onWait)o.onWait(Math.ceil(soon/1000));await sleep(soon+500);return llm(req,{...o,_retried:true})}
+  }
   throw lastErr||{code:'api'};
+}
+function restFor(msg){
+  if(/per.?minute|PerMinute|rpm\b|tokens per minute|TPM|upstream|temporarily/i.test(msg))return 65e3;
+  if(/per.?day|PerDay|daily|RPD|per-day|free-models-per-day/i.test(msg)){const d=new Date(),n=new Date(d);n.setHours(24,5,0,0);return Math.min(n-d,3*3600e3)}
+  return 90e3;
 }
 function errMsg(e){return !e?'Something went wrong.':e.code==='rate_limited'?(engine()==='api'?'All your free AIs are at their limit right now. Add another key in “Me” or try again later.':'Too many messages in a row. Wait a moment.'):e.code==='not_granted'?'I need permission to use the AI. Try again and accept the prompt.':e.code==='bad_key'?'One of your keys isn\'t valid. Check them in “Me”.':e.code==='no_credit'?'Your API account is out of credit.':e.code==='blocked'?'This model blocked the scene. Tap Redo, rephrase, or switch model in “Me”.':e.code==='no_engine'?'Set up your AI engine in “Me”.':e.code==='network'?'Can\'t reach the AI provider.':'I couldn\'t reply. Try again.'}
 
@@ -941,7 +953,7 @@ async function generate(c,userText,visible,atts){
   if(cur===c)renderMsgs(`<div class="m a" id="live"><span class="typing"><span></span><span></span><span></span></span></div>`);
   ctrl=new AbortController();let txt='';
   const done=()=>{busy=false;$('send').textContent='➤';$('send').setAttribute('aria-label','Send');ctrl=null};
-  try{txt=await llm(chatReq(c),{signal:ctrl.signal,max:c.len==='l'?2600:1800,onText:t=>{txt=t;const l=$('live');if(l)l.innerHTML=fmtA(t,c);window.scrollTo(0,document.body.scrollHeight)}})}
+  try{txt=await llm(chatReq(c),{onWait:s=>{const l=$('live');if(l)l.innerHTML=`<span class="hint" style="margin:0">All free AIs are busy for a moment. Waiting ${s}s and trying again…</span>`},signal:ctrl.signal,max:c.len==='l'?2600:1800,onText:t=>{txt=t;const l=$('live');if(l)l.innerHTML=fmtA(t,c);window.scrollTo(0,document.body.scrollHeight)}})}
   catch(e){if(e&&e.text)txt=e.text;if(!txt){if(userText)c.msgs.pop();done();if(cur===c)renderMsgs(`<div class="m err">${esc(errMsg(e))}</div>`);if(visible&&userText)$('inp').value=userText;return}}
   c.msgs.push({r:'a',t:txt.trim(),at:Date.now()});
   done();if(cur===c)renderMsgs();
@@ -1233,7 +1245,9 @@ function renderMe(){
   $('kMistral').value=cfg.kMistral||'';$('kGemini').value=cfg.kGemini||'';$('kOR').value=cfg.kOR||'';
   $('cfgBase').value=cfg.base||'';$('cfgKey').value=cfg.key||'';$('cfgModel').value=cfg.model||'';
   const u=cfg.useDay===today()?cfg.use||{}:{};
-  $('usage').innerHTML=providers().length?'<b>Used today:</b> '+providers().map(p=>`${p.name} ${u[p.id]||0}${cooling(p.id)?' (resting)':''}`).join(' · ')+(lastProvider?`<br>Last reply by: ${esc(lastProvider)}`:''):'';
+  const rest=id=>{const ms=(cfg.cool&&cfg.cool[id]||0)-Date.now();return ms>0?` (resting ${ms>90e3?Math.ceil(ms/60e3)+' min':Math.ceil(ms/1000)+' s'})`:''};
+  $('usage').innerHTML=providers().length?'<b>Used today:</b> '+providers().map(p=>`${p.name} ${u[p.id]||0}${rest(p.id)}`).join(' · ')+(lastProvider?`<br>Last reply by: ${esc(lastProvider)}`:'')+(providers().some(p=>cooling(p.id))?'<br><button class="gen" id="wakeAll" style="margin-top:8px">Wake all AIs now</button>':''):'';
+  if($('wakeAll'))$('wakeAll').onclick=()=>{cfg.cool={};saveCfg();renderMe();toast('All AIs are ready again')};
   $('speed').innerHTML=`<button type="button" data-sp="fast" aria-pressed="${cfg.speed==='fast'}">Fast</button><button type="button" data-sp="quality" aria-pressed="${cfg.speed==='quality'}">Best quality</button>`;
   $('installTxt').innerHTML=IN_CLAUDE?'This version lives inside Claude and has the best memory. To have an app on your home screen without opening Claude, use the <b>standalone version</b> I sent you in the chat, then move your stories over with Export/Import.':'In Chrome, tap ⋮ → “Add to Home screen” (or “Install app”). It opens full-screen like any other app.';
 }
