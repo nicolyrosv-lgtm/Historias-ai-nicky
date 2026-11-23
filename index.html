@@ -50,6 +50,8 @@ button:disabled{opacity:.5;cursor:default}
 @media(min-width:620px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .cardc{position:relative;aspect-ratio:9/16;border-radius:18px;overflow:hidden;text-align:start;padding:0;display:block;background:var(--panel)}
 .cardc .bg{position:absolute;inset:0;background-size:cover;background-position:center top}
+.cardc .ed{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:#000a;border:1px solid #fff4;display:grid;place-items:center;font-size:15px;backdrop-filter:blur(4px)}
+.citem .ed{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;flex:none}
 .cardc .sh{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,#000e 78%)}
 .cardc .tx{position:absolute;left:12px;right:12px;bottom:12px;display:grid;gap:4px}
 .cardc b{font-size:18px;line-height:1.2;display:flex;gap:6px;justify-content:space-between;align-items:baseline}
@@ -74,6 +76,7 @@ button:disabled{opacity:.5;cursor:default}
 .sect h3{font-size:18px}
 .top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;padding:8px 12px;background:linear-gradient(180deg,#000c,#0000)}
 .top .t{flex:1}.top b{font-size:15px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top small{color:var(--mute);font-size:12.5px}
+.top.dots{background-color:#121014;background-image:radial-gradient(#ff174448 1.6px,transparent 1.8px);background-size:14px 14px}
 .ib{min-width:40px;min-height:40px;padding:0 10px;display:grid;place-items:center;font-size:13px;font-weight:600}
 .ib.big{font-size:30px;padding:0;font-weight:400}
 .pill{background:#0009;border:1px solid #fff2;backdrop-filter:blur(6px)}
@@ -238,13 +241,13 @@ dialog::backdrop{background:#000b}
 <section class="view" id="v-img">
   <div class="top dots"><button class="ib big" data-back aria-label="Back">‹</button><div class="t"><b>Story from images</b><small>You don't have to write anything</small></div></div>
   <div class="form" style="padding-bottom:40px">
-    <div><div class="lbl"><span>Your images</span><span class="cnt" id="imgCnt">0/4</span></div><p class="hint">The first one becomes the character's background. The rest give the AI more clues (places, other characters, mood).</p>
+    <div><div class="lbl"><span>Your images</span><span class="cnt" id="imgCnt">0/8</span></div><p class="hint">The first one becomes the character's background. The rest give the AI more clues (places, other characters, mood).</p>
       <div class="slots" id="slots"></div>
       <input type="file" id="multiImg" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
       <div class="paste" id="pasteMany" contenteditable="true" role="textbox" aria-label="Paste image" style="margin-top:10px"></div></div>
     <div><div class="lbl"><span>How should they treat you?</span></div><p class="hint">Optional.</p><div class="tags" id="imgAtt"></div></div>
     <div><div class="lbl"><span>Genre</span></div><p class="hint">Optional. If you skip it, the AI decides from the photos.</p><div class="tags" id="imgTags"></div></div>
-    <div><div class="lbl"><span>Anything else</span></div><div class="box" style="margin-top:10px"><input id="imgExtra" maxlength="300" placeholder="Optional: “he's my stepbrother”, “Victorian era”…"></div></div>
+    <div><div class="lbl"><span>Story vibes</span><span class="cnt" data-vc="imgExtra">0/3000</span></div><p class="hint">Optional, as long as you like: the mood, the plot you want, who they are to you, the setting, scenes you'd love to happen, things to avoid.</p><div class="box"><textarea id="imgExtra" class="tall" maxlength="3000" placeholder="E.g. Dark academia, 1890s. He's my stepbrother and we can't stand each other. Slow burn, lots of jealousy, a secret society, and his family hides a murder…"></textarea></div></div>
     <button class="go" id="imgGo">✦ Create story</button>
     <p class="hint" id="imgStatus" style="text-align:center"></p>
   </div>
@@ -270,8 +273,8 @@ dialog::backdrop{background:#000b}
     </div>
     <div class="card">
       <div class="cardh"><h2>Information card</h2><button type="button" class="gen" id="genAll">✦ Generate all</button></div>
-      <div><div class="lbl"><span>Your idea</span></div><p class="hint">One sentence is enough. “Generate all” fills in the card from it (and from the image, if there is one).</p>
-        <div class="box"><input id="fIdea" maxlength="400" placeholder="E.g. my boss has hated me since day one and now we have to fake being a couple"></div></div>
+      <div><div class="lbl"><span>Idea &amp; story vibes</span><span class="cnt" data-vc="fIdea">0/3000</span></div><p class="hint">A sentence or a whole page: plot, mood, setting, what you want to happen. “Generate all” builds the card from it (and from the image, if there is one).</p>
+        <div class="box"><textarea id="fIdea" class="tall" maxlength="3000" placeholder="E.g. My boss has hated me since day one and now we have to fake being a couple for his family's wedding in Sicily. Enemies to lovers, lots of tension, his ex is there…"></textarea></div></div>
       <div><div class="lbl"><span>Name <i>*</i></span><span class="cnt" data-c="fName">0/40</span></div>
         <div class="box row" style="margin-top:10px"><input id="fName" maxlength="40"><button type="button" class="ib" data-gen="name" aria-label="Generate name" style="font-size:20px">↻</button></div></div>
       <div><div class="lbl"><span>Age</span><span class="cnt" data-c="fAge">0/5</span></div><div class="box" style="margin-top:10px"><input id="fAge" maxlength="5" inputmode="numeric"></div></div>
@@ -348,7 +351,7 @@ dialog::backdrop{background:#000b}
     <div><div class="lbl"><span>Preferred name or title</span><span class="cnt" data-pc="pNick">0/30</span></div><div class="box" style="margin-top:10px"><input id="pNick" maxlength="30" placeholder="What characters call you"></div></div>
     <div><div class="lbl"><span>Gender &amp; age</span><span class="cnt" data-pc="pGen">0/60</span></div><div class="box" style="margin-top:10px"><input id="pGen" maxlength="60" placeholder="E.g. Woman, 19"></div></div>
     <div><div class="lbl"><span>Profile</span><span class="cnt" data-pc="pProf">0/3000</span></div><p class="hint">Appearance, personality, background, skills, how you behave. The AI uses it to describe and treat you.</p>
-      <div class="box"><textarea id="pProf" class="tall" maxlength="3000"></textarea></div></div>
+      <div class="box"><textarea id="pProf" class="tall" maxlength="3000"></textarea><button type="button" class="gen" id="pGenBtn">✦ Write from photo</button></div></div>
     <div class="row" style="justify-content:space-between;background:var(--panel);border-radius:18px;padding:14px 16px"><div><b>Set as default persona</b><div class="hint" style="margin:2px 0 0">Selected automatically in new chats.</div></div><button type="button" class="switch" id="pDef" role="switch" aria-checked="false" aria-label="Default persona"></button></div>
     <button class="go" id="pSave">Save changes</button>
   </div>
@@ -585,7 +588,7 @@ $('plusBtn').addEventListener('click',()=>{
 });
 
 /* ---------- home ---------- */
-function cardHTML(c,attr){const tags=(c.tags||[]).slice(0,3);return `<button class="cardc" ${attr}><span class="bg" style="background-image:url('${c.src||pic(c)}')"></span><span class="sh"></span><span class="tx"><b><span>${esc(c.name)}</span>${c.msgs?`<small>💬 ${c.msgCount||c.msgs.length}</small>`:''}</b><p>${esc(c.intro||'')}</p><span class="pills">${tags.map(t=>`<span>${esc(t)}</span>`).join('')}</span></span></button>`}
+function cardHTML(c,attr){const tags=(c.tags||[]).slice(0,3);return `<button class="cardc" ${attr}><span class="bg" style="background-image:url('${c.src||pic(c)}')"></span><span class="sh"></span>${c.msgs?`<span class="ed" data-edit="${esc(c.id)}" role="button" aria-label="Edit ${esc(c.name)}">✎</span>`:''}<span class="tx"><b><span>${esc(c.name)}</span>${c.msgs?`<small>💬 ${c.msgCount||c.msgs.length}</small>`:''}</b><p>${esc(c.intro||'')}</p><span class="pills">${tags.map(t=>`<span>${esc(t)}</span>`).join('')}</span></span></button>`}
 function renderHome(){
   for(const b of document.querySelectorAll('[data-ht]'))b.setAttribute('aria-pressed',String(b.dataset.ht===homeTab));
   $('imgBanner').style.display=homeTab==='mine'?'flex':'none';
@@ -594,13 +597,13 @@ function renderHome(){
   $('feed').innerHTML=s.length?s.map(c=>cardHTML(c,`data-id="${esc(c.id)}"`)).join(''):`<div class="empty" style="grid-column:1/-1">No stories yet. Tap ＋ or create one from images.</div>`;
 }
 $('homeTabs').addEventListener('click',e=>{const b=e.target.closest('[data-ht]');if(b){homeTab=b.dataset.ht;renderHome();show('v-home')}});
-$('feed').addEventListener('click',e=>{const a=e.target.closest('[data-id]'),p=e.target.closest('[data-p]');if(a)openChat(a.dataset.id);else if(p)openEdit(null,PRESETS[+p.dataset.p])});
+$('feed').addEventListener('click',e=>{const ed=e.target.closest('[data-edit]');if(ed){e.stopPropagation();openEdit(ed.dataset.edit);return}const a=e.target.closest('[data-id]'),p=e.target.closest('[data-p]');if(a)openChat(a.dataset.id);else if(p)openEdit(null,PRESETS[+p.dataset.p])});
 $('imgBanner').addEventListener('click',()=>openImg());
 function renderChats(){
   const s=[...chars].filter(c=>c.msgs.length).sort((a,b)=>(b.updated||0)-(a.updated||0));
-  $('clist').innerHTML=s.length?s.map(c=>{const last=c.msgs.filter(m=>!m.hid).at(-1);return `<button class="citem" data-id="${esc(c.id)}"><span class="ph" style="background-image:url('${pic(c)}')"></span><span style="flex:1;min-width:0"><b><span class="lv">LV${lvl(c)}</span>${esc(c.name)}</b><small>${esc(last?last.t.replace(/\s+/g,' '):'')}</small></span></button>`}).join(''):'<div class="empty">You haven\'t talked to anyone yet.</div>';
+  $('clist').innerHTML=s.length?s.map(c=>{const last=c.msgs.filter(m=>!m.hid).at(-1);return `<button class="citem" data-id="${esc(c.id)}"><span class="ph" style="background-image:url('${pic(c)}')"></span><span style="flex:1;min-width:0"><b><span class="lv">LV${lvl(c)}</span>${esc(c.name)}</b><small>${esc(last?last.t.replace(/\s+/g,' ').replace(/\[\[|\]\]/g,''):'')}</small></span><span class="ed" data-edit="${esc(c.id)}" role="button" aria-label="Edit ${esc(c.name)}">✎</span></button>`}).join(''):'<div class="empty">You haven\'t talked to anyone yet.</div>';
 }
-$('clist').addEventListener('click',e=>{const a=e.target.closest('[data-id]');if(a)openChat(a.dataset.id)});
+$('clist').addEventListener('click',e=>{const ed=e.target.closest('[data-edit]');if(ed){openEdit(ed.dataset.edit);return}const a=e.target.closest('[data-id]');if(a)openChat(a.dataset.id)});
 
 /* ---------- images ---------- */
 async function compress(file,max=900){
@@ -621,14 +624,14 @@ async function readImg(f,max){if(!f)return null;if(f.type&&!f.type.startsWith('i
 
 /* ---------- create from images ---------- */
 let pend=[],imgAtt=[],imgTags=[];
-function openImg(){pend=[];imgAtt=[];imgTags=[];$('imgExtra').value='';$('imgStatus').textContent='';renderImg();show('v-img')}
+function openImg(){pend=[];imgAtt=[];imgTags=[];$('imgExtra').value='';document.querySelector('[data-vc="imgExtra"]').textContent='0/3000';$('imgStatus').textContent='';renderImg();show('v-img')}
 function renderImg(){
-  $('slots').innerHTML=[0,1,2,3].map(i=>pend[i]?`<div class="slot full" style="background-image:url('${pend[i]}')"><button class="x" data-rm="${i}" aria-label="Remove">×</button></div>`:`<button class="slot" data-add aria-label="Add image">＋</button>`).join('');
-  $('imgCnt').textContent=pend.length+'/4';
+  $('slots').innerHTML=[0,1,2,3,4,5,6,7].map(i=>pend[i]?`<div class="slot full" style="background-image:url('${pend[i]}')"><button class="x" data-rm="${i}" aria-label="Remove">×</button></div>`:`<button class="slot" data-add aria-label="Add image">＋</button>`).join('');
+  $('imgCnt').textContent=pend.length+'/8';
   $('imgAtt').innerHTML=ATTS.map(t=>`<button type="button" data-a="${t}" aria-pressed="${imgAtt.includes(t)}">${t}</button>`).join('');
   $('imgTags').innerHTML=TAGS.map(t=>`<button type="button" data-t="${t}" aria-pressed="${imgTags.includes(t)}">${t}</button>`).join('');
 }
-async function addPend(f){if(pend.length>=4){toast('4 images max.');return}const d=await readImg(f,900);if(d){pend.push(d);renderImg()}}
+async function addPend(f){if(pend.length>=8){toast('8 images max.');return}const d=await readImg(f,pend.length?640:900);if(d){pend.push(d);renderImg()}}
 $('v-img').addEventListener('click',e=>{
   if(e.target.closest('[data-add]')){try{$('multiImg').click()}catch(err){toast('Paste the image into the dotted box.')}return}
   const rm=e.target.closest('[data-rm]');if(rm){pend.splice(+rm.dataset.rm,1);renderImg();return}
@@ -646,8 +649,8 @@ $('imgGo').addEventListener('click',async()=>{
   if(!vis)toast('This engine can\'t see images; I\'ll build the story from your options only.');
   const b=$('imgGo');b.disabled=true;$('imgStatus').textContent='Looking at your images and inventing the story… (this can take a moment)';
   try{
-    const txt=await llm({system:CREATOR,prompt:`${vis?`I am sending ${pend.length} image(s). The first one is the main character: describe them faithfully. Use the others as clues (other characters, places, mood).`:'Invent a surprising character and story.'}
-User preferences (optional): how they treat the user: ${imgAtt.join(', ')||'your choice, whatever has the most hook'}; genres: ${imgTags.join(', ')||'your choice, based on the images'}; extra: ${$('imgExtra').value||'nothing'}.
+    const txt=await llm({system:CREATOR,prompt:`${vis?`I am sending ${pend.length} image(s). The first one is the main character: describe them faithfully. Use the others as clues: other characters (add them to the lore with their looks), places, outfits, mood and era.`:'Invent a surprising character and story.'}
+User preferences (optional): how they treat the user: ${imgAtt.join(', ')||'your choice, whatever has the most hook'}; genres: ${imgTags.join(', ')||'your choice, based on the images'}; story vibes written by the user (follow them closely, they matter most): ${$('imgExtra').value.trim()||'none'}.
 About the user's persona: ${personaText(personaFor(null))}
 Return ONLY JSON in this shape: ${CARD_JSON} with 3-6 lore entries.`},{images:vis?pend:[],max:3500,tier:'default'});
     const j=parseJSON(txt);if(!j||!j.name)throw{code:'parse'};
@@ -711,7 +714,7 @@ $('pickImg').addEventListener('click',()=>{try{$('fImg').click()}catch(e){toast(
 $('fImg').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';takeImg(f)});
 wirePaste($('pasteImg'),takeImg);
 $('rmImg').addEventListener('click',()=>{draftImg=null;renderPrev()});
-function ctxCard(){readForm();return `Idea: ${$('fIdea').value||'(none)'}\nName: ${draft.name||'(undecided)'}\nAge: ${draft.age||'?'}\nGender: ${draft.gender||'?'}\nTags: ${draft.tags.join(', ')||'?'}\nHow they treat the user: ${draft.att.join(', ')||'?'}\nRules: ${draft.rules||'(empty)'}\nIntro: ${draft.intro||'(empty)'}\nDetails: ${draft.details||'(empty)'}\nUser's role: ${draft.role||'(empty)'}\nStyle: ${draft.style==='novel'?'narrated novel':'chat'}`}
+function ctxCard(){readForm();return `Idea & story vibes (follow closely): ${$('fIdea').value||'(none)'}\nName: ${draft.name||'(undecided)'}\nAge: ${draft.age||'?'}\nGender: ${draft.gender||'?'}\nTags: ${draft.tags.join(', ')||'?'}\nHow they treat the user: ${draft.att.join(', ')||'?'}\nRules: ${draft.rules||'(empty)'}\nIntro: ${draft.intro||'(empty)'}\nDetails: ${draft.details||'(empty)'}\nUser's role: ${draft.role||'(empty)'}\nStyle: ${draft.style==='novel'?'narrated novel':'chat'}`}
 const ASK={
   name:'Suggest ONE name (with a surname if it fits) for this character. Return only the name.',
   intro:'Write the Intro (max 600 characters): introduce the character and the situation with a hook, in second person addressed to the user, ending with a question or dilemma. Return only the text.',
@@ -765,6 +768,8 @@ const OPEN='(( Write the opening scene: set the place, show the character with t
 $('clearBtn').addEventListener('click',()=>ask('Start over?','This erases the conversation, chapters and memory. The card stays.','Erase all',()=>{const c=chars.find(x=>x.id===draft.id);Object.assign(c,{msgs:c.prologue?[{r:'a',t:c.prologue,at:Date.now()}]:[],chapters:[],saga:'',sagaCount:0,bible:'',facts:'',sinceMem:0});dropArch(c.id);saveChar(c);openChat(c.id);if(!c.prologue)generate(c,OPEN)}));
 $('delBtn').addEventListener('click',()=>ask('Delete “'+esc(draft.name)+'”?','Gone forever, with all their memory.','Delete',()=>{chars=chars.filter(x=>x.id!==draft.id);dropArch(draft.id);write(draft.id,null);if(imgs[draft.id]){delete imgs[draft.id];write('img_'+draft.id,null)}renderHome();show('v-home')}));
 $('back2').addEventListener('click',()=>{cur&&chars.some(c=>c.id===cur.id)?openChat(cur.id):(renderHome(),show(lastTab))});
+
+for(const id of ['imgExtra','fIdea'])$(id).addEventListener('input',()=>{const el=document.querySelector(`[data-vc="${id}"]`);if(el)el.textContent=$(id).value.length+'/3000'});
 
 /* ---------- archive ---------- */
 function dropArch(cid){for(const a of arch[cid]||[])write(a.id,null);delete arch[cid]}
@@ -1096,6 +1101,19 @@ $('pDel').addEventListener('click',()=>ask('Delete “'+esc(editP.name)+'”?','
   personas=personas.filter(x=>x.id!==editP.id);write(editP.id,null);if(pimgs[editP.id]){delete pimgs[editP.id];write('pimg_'+editP.id,null)}
   if(me.defPersona===editP.id){me.defPersona='';saveMe()}for(const c of chars)if(c.personaId===editP.id){delete c.personaId;saveChar(c)}
   renderMe();show('v-me')}));
+$('pGenBtn').addEventListener('click',async()=>{
+  if(engine()==='none'){noAI();return}
+  const im=editPImg===undefined?pimgs[editP.id]:editPImg,useIm=im&&(engine()==='api'||visionOK);
+  if(!useIm&&!$('pProf').value.trim()&&!$('pName').value.trim()){toast('Add a cover photo or a few notes first.');return}
+  const b=$('pGenBtn');b.disabled=true;b.textContent='Writing…';
+  try{const t=(await llm({system:CREATOR,prompt:`Write the profile of a PROTAGONIST that the user will play in interactive stories (850-1000 characters, in English).${useIm?' The attached photo is this person: describe their looks faithfully.':''}
+Name: ${$('pName').value||'(not set)'} · Preferred name: ${$('pNick').value||'-'} · Gender & age: ${$('pGen').value||'-'}
+User's notes (keep and expand them, never contradict): ${$('pProf').value.trim()||'(none)'}
+Cover: appearance (height, build, face, eyes, hair, style), personality, background, skills, habits, how they act when angry or in love. Third person, concrete details. Return only the profile text.`},{images:useIm?[im]:[],tier:'default'})).trim();
+    if(t){$('pProf').value=t.slice(0,3000);pCounts()}}
+  catch(e){toast(errMsg(e))}
+  b.disabled=false;b.textContent='✦ Write from photo';
+});
 $('backP').addEventListener('click',()=>{if(pReturn==='v-chat'&&cur)openChat(cur.id);else{renderMe();show('v-me')}});
 function renderPChip(){const x=personaFor(cur);$('pChip').innerHTML=x?`<span class="av" style="width:32px;height:32px;background-image:url('${pPic(x)}')"></span><span>${esc(x.nick||x.name)}</span>`:`<span class="av" style="width:32px;height:32px;background:#333;display:grid;place-items:center">＋</span><span>Choose persona</span>`}
 $('pChip').addEventListener('click',()=>{
