@@ -234,7 +234,7 @@ dialog::backdrop{background:#000b}
       <p class="hint" style="margin:0">Free AI chain: the app uses the first AI that still has messages left today and switches to the next one automatically. Add as many keys as you can. They are stored only on this phone.</p>
       <div class="box"><div class="lbl" style="font-size:15px"><span>1 · Mistral</span><a class="cnt" href="https://console.mistral.ai/" target="_blank" rel="noopener">console.mistral.ai</a></div><input id="kMistral" type="password" placeholder="Mistral API key" autocomplete="off"></div>
       <div class="box"><div class="lbl" style="font-size:15px"><span>2 · Gemini</span><a class="cnt" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a></div><input id="kGemini" type="password" placeholder="Gemini API key (used for Flash-Lite and Flash)" autocomplete="off"></div>
-      <div class="box"><div class="lbl" style="font-size:15px"><span>3 · OpenRouter</span><a class="cnt" href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">openrouter.ai</a></div><input id="kOR" type="password" placeholder="OpenRouter API key" autocomplete="off"></div>
+      <div class="box"><div class="lbl" style="font-size:15px"><span>3 · OpenRouter</span><a class="cnt" href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">openrouter.ai</a></div><input id="kOR" type="password" placeholder="OpenRouter API key" autocomplete="off"><label style="display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:13.5px;line-height:1.4"><input id="usePaid" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span><b>Best quality: use my OpenRouter credit for story replies</b><br><span style="color:#b9b3c2">DeepSeek V4.1 writes the story (about $0.002 per reply, so $10 ≈ 4,000 replies). Memory jobs stay free. Your 1,000 free requests a day are kept.</span></span></label></div>
       <details class="box"><summary style="cursor:pointer;font-weight:600">Custom provider (optional, used last)</summary>
         <input id="cfgBase" placeholder="Base URL (e.g. https://api.deepseek.com)" style="margin-top:8px">
         <input id="cfgKey" type="password" placeholder="API key" autocomplete="off">
@@ -443,12 +443,13 @@ if(!cfg.coolFix1){cfg.cool={};cfg.coolFix1=1;try{localStorage.setItem('historias
 const GEM='https://generativelanguage.googleapis.com/v1beta/openai';
 const OR='https://openrouter.ai/api/v1';
 // story replies go to the strongest writers first; memory/background jobs to the cheap fast ones
-const ORDER_STORY=['custom','mistral','gemini','orUltra','orErnie','orSuper','orGemma','gemlite'];
+const ORDER_STORY=['custom','mistral','orPaid','gemini','orUltra','orErnie','orSuper','orGemma','gemlite'];
 const ORDER_MEM=['custom','mistral','gemlite','orErnie','orSuper','orGemma','orUltra','gemini','openrouter'];
 const CHAIN=[
  {id:'mistral',name:'Mistral',base:'https://api.mistral.ai/v1',model:'mistral-large-latest',key:()=>cfg.kMistral},
  {id:'gemlite',name:'Gemini Flash-Lite',base:GEM,model:'gemini-3.1-flash-lite',key:()=>cfg.kGemini,vision:true},
  {id:'gemini',name:'Gemini Flash',base:GEM,model:'gemini-3.5-flash',key:()=>cfg.kGemini,vision:true},
+ {id:'orPaid',name:'DeepSeek V4.1 (credit)',base:OR,model:'deepseek/deepseek-v4.1-flash',key:()=>cfg.usePaid?cfg.kOR:'',paid:true},
  {id:'orUltra',name:'Nemotron Ultra',base:OR,model:'nvidia/nemotron-3-ultra-550b-a55b:free',key:()=>cfg.kOR},
  {id:'orErnie',name:'ERNIE 5.5',base:OR,model:'baidu/ernie-5.5-flash-preview:free',key:()=>cfg.kOR},
  {id:'orSuper',name:'Nemotron Super',base:OR,model:'nvidia/nemotron-3.5-super-vl:free',key:()=>cfg.kOR,vision:true},
@@ -471,7 +472,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function callProvider(p,msgs,o){
   const headers={'Content-Type':'application/json','Authorization':'Bearer '+p.key()};
   if(p.base===OR){headers['HTTP-Referer']=location.origin||'https://localhost';headers['X-Title']='My AI Stories'}
-  const extra=/deepseek\.com/.test(p.base)?{thinking:{type:'disabled'}}:p.base===GEM?{reasoning_effort:'minimal'}:p.base===OR?{reasoning:{effort:'low',exclude:true}}:{};
+  const extra=/deepseek\.com/.test(p.base)?{thinking:{type:'disabled'}}:p.base===GEM?{reasoning_effort:'minimal'}:p.paid?{reasoning:{enabled:false}}:p.base===OR?{reasoning:{effort:'low',exclude:true}}:{};
   let res;
   try{res=await fetch(p.base.replace(/\/$/,'')+'/chat/completions',{method:'POST',headers,signal:o.signal,body:JSON.stringify({model:p.model,messages:msgs,stream:!!o.onText,temperature:o.temp??0.9,max_tokens:o.max||1800,...extra})})}
   catch(e){if(e.name==='AbortError')throw e;throw{code:'network'}}
@@ -1258,7 +1259,7 @@ function renderMe(){
   $('engineBox').className='engine'+(eng==='none'?' off':'');
   $('engineTxt').textContent=eng==='claude'?'Using Claude\'s AI (included in your plan, no gems). Maximum memory is on.':eng==='api'?`Free AI chain: ${providers().map(p=>p.name).join(' → ')}`:(IN_CLAUDE?'Connecting to Claude…':'No engine yet: add at least one free key below.');
   $('apiCfg').style.display=IN_CLAUDE?'none':'grid';
-  $('kMistral').value=cfg.kMistral||'';$('kGemini').value=cfg.kGemini||'';$('kOR').value=cfg.kOR||'';
+  $('kMistral').value=cfg.kMistral||'';$('kGemini').value=cfg.kGemini||'';$('kOR').value=cfg.kOR||'';$('usePaid').checked=!!cfg.usePaid;
   $('cfgBase').value=cfg.base||'';$('cfgKey').value=cfg.key||'';$('cfgModel').value=cfg.model||'';
   const u=cfg.useDay===today()?cfg.use||{}:{};
   const rest=id=>{const ms=(cfg.cool&&cfg.cool[id]||0)-Date.now();return ms>0?` (resting ${ms>90e3?Math.ceil(ms/60e3)+' min':Math.ceil(ms/1000)+' s'})`:''};
@@ -1267,7 +1268,7 @@ function renderMe(){
   $('speed').innerHTML=`<button type="button" data-sp="fast" aria-pressed="${cfg.speed==='fast'}">Fast</button><button type="button" data-sp="quality" aria-pressed="${cfg.speed==='quality'}">Best quality</button>`;
   $('installTxt').innerHTML=IN_CLAUDE?'This version lives inside Claude and has the best memory. To have an app on your home screen without opening Claude, use the <b>standalone version</b> I sent you in the chat, then move your stories over with Export/Import.':'In Chrome, tap ⋮ → “Add to Home screen” (or “Install app”). It opens full-screen like any other app.';
 }
-$('cfgSave').addEventListener('click',()=>{cfg.kMistral=$('kMistral').value.trim();cfg.kGemini=$('kGemini').value.trim();cfg.kOR=$('kOR').value.trim();cfg.base=$('cfgBase').value.trim();cfg.key=$('cfgKey').value.trim();cfg.model=$('cfgModel').value.trim();cfg.cool={};saveCfg();renderMe();toast(engine()==='api'?'Engine ready: '+providers().length+' AI'+(providers().length>1?'s':'')+' in the chain.':'Add at least one key.')});
+$('cfgSave').addEventListener('click',()=>{cfg.kMistral=$('kMistral').value.trim();cfg.kGemini=$('kGemini').value.trim();cfg.kOR=$('kOR').value.trim();cfg.usePaid=$('usePaid').checked;cfg.base=$('cfgBase').value.trim();cfg.key=$('cfgKey').value.trim();cfg.model=$('cfgModel').value.trim();cfg.cool={};saveCfg();renderMe();toast(engine()==='api'?'Engine ready: '+providers().length+' AI'+(providers().length>1?'s':'')+' in the chain.':'Add at least one key.')});
 $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-sp]');if(!b)return;cfg.speed=b.dataset.sp;saveCfg();renderMe()});
 $('expBtn').addEventListener('click',()=>{
   const data=JSON.stringify({app:'historiasIA',v:3,docs:allDocs()});
