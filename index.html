@@ -146,6 +146,7 @@ button:disabled{opacity:.5;cursor:default}
 .acts2{display:flex;gap:8px;align-self:flex-start;flex-wrap:wrap}
 .acts2 button{background:#0009;border:1.5px solid var(--red);min-height:34px;font-size:13px;font-weight:600;padding:0 14px}
 .chap{align-self:center;color:#ccc;font-size:12.5px;padding:5px 12px;border-radius:12px;background:#0008}
+.byl{color:#9d97a6;font-size:11.5px;margin:-4px 0 0 2px}
 .aig{text-align:center;color:#c9c4cf;font-size:12.5px;padding:2px 0 6px}
 .typing span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#ccc;animation:b 1s infinite}
 .typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
@@ -440,11 +441,19 @@ if(!cfg.coolFix1){cfg.cool={};cfg.coolFix1=1;try{localStorage.setItem('historias
 
 /* ---------- AI engine ---------- */
 const GEM='https://generativelanguage.googleapis.com/v1beta/openai';
+const OR='https://openrouter.ai/api/v1';
+// story replies go to the strongest writers first; memory/background jobs to the cheap fast ones
+const ORDER_STORY=['custom','mistral','gemini','orUltra','orErnie','orSuper','orGemma','gemlite'];
+const ORDER_MEM=['custom','mistral','gemlite','orErnie','orSuper','orGemma','orUltra','gemini','openrouter'];
 const CHAIN=[
  {id:'mistral',name:'Mistral',base:'https://api.mistral.ai/v1',model:'mistral-large-latest',key:()=>cfg.kMistral},
  {id:'gemlite',name:'Gemini Flash-Lite',base:GEM,model:'gemini-3.1-flash-lite',key:()=>cfg.kGemini,vision:true},
  {id:'gemini',name:'Gemini Flash',base:GEM,model:'gemini-3.5-flash',key:()=>cfg.kGemini,vision:true},
- {id:'openrouter',name:'OpenRouter',base:'https://openrouter.ai/api/v1',model:'openrouter/free',key:()=>cfg.kOR},
+ {id:'orUltra',name:'Nemotron Ultra',base:OR,model:'nvidia/nemotron-3-ultra-550b-a55b:free',key:()=>cfg.kOR},
+ {id:'orErnie',name:'ERNIE 5.5',base:OR,model:'baidu/ernie-5.5-flash-preview:free',key:()=>cfg.kOR},
+ {id:'orSuper',name:'Nemotron Super',base:OR,model:'nvidia/nemotron-3.5-super-vl:free',key:()=>cfg.kOR,vision:true},
+ {id:'orGemma',name:'Gemma 4',base:OR,model:'google/gemma-4-31b-it:free',key:()=>cfg.kOR},
+ {id:'openrouter',name:'OpenRouter auto',base:OR,model:'openrouter/free',key:()=>cfg.kOR,weak:true},
  {id:'custom',name:'Custom',base:null,model:null,key:()=>cfg.key}];
 // migrate the old single-provider settings
 if(cfg.key&&cfg.base&&!cfg.migrated){if(/generativelanguage/.test(cfg.base)){cfg.kGemini=cfg.kGemini||cfg.key;cfg.key=''}else if(/openrouter/.test(cfg.base)){cfg.kOR=cfg.kOR||cfg.key;cfg.key=''}cfg.migrated=1;saveCfg()}
@@ -461,8 +470,8 @@ let lastProvider='';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function callProvider(p,msgs,o){
   const headers={'Content-Type':'application/json','Authorization':'Bearer '+p.key()};
-  if(p.id==='openrouter'){headers['HTTP-Referer']=location.origin||'https://localhost';headers['X-Title']='My AI Stories'}
-  const extra=/deepseek\.com/.test(p.base)?{thinking:{type:'disabled'}}:p.base===GEM?{reasoning_effort:'minimal'}:{};
+  if(p.base===OR){headers['HTTP-Referer']=location.origin||'https://localhost';headers['X-Title']='My AI Stories'}
+  const extra=/deepseek\.com/.test(p.base)?{thinking:{type:'disabled'}}:p.base===GEM?{reasoning_effort:'minimal'}:p.base===OR?{reasoning:{effort:'low',exclude:true}}:{};
   let res;
   try{res=await fetch(p.base.replace(/\/$/,'')+'/chat/completions',{method:'POST',headers,signal:o.signal,body:JSON.stringify({model:p.model,messages:msgs,stream:!!o.onText,temperature:o.temp??0.9,max_tokens:o.max||1800,...extra})})}
   catch(e){if(e.name==='AbortError')throw e;throw{code:'network'}}
@@ -489,7 +498,9 @@ async function llm(req,o={}){
   }
   let msgs=[];if(req.system)msgs.push({role:'system',content:req.system});
   if(req.prompt)msgs.push({role:'user',content:req.prompt});else{const mm=mergeRoles(req.messages);if(mm[0]&&mm[0].role==='assistant')mm.unshift({role:'user',content:'(( Begin. ))'});if(mm.at(-1)?.role!=='user')mm.push({role:'user',content:'(( Continue. ))'});msgs.push(...mm)}
-  let list=providers();
+  const ord=o.mem?ORDER_MEM:ORDER_STORY;
+  let list=providers().filter(p=>ord.includes(p.id)).sort((a,b)=>ord.indexOf(a.id)-ord.indexOf(b.id));
+  if(o.avoid&&list.length>1){const av=list.filter(p=>p.name===o.avoid);list=[...list.filter(p=>p.name!==o.avoid),...av]}
   if(o.images&&o.images.length){const v=list.filter(p=>p.vision);list=[...v,...list.filter(p=>!p.vision)]}
   const live=list.filter(p=>!cooling(p.id));if(live.length)list=[...live,...list.filter(p=>cooling(p.id))];
   let lastErr=null;
@@ -840,7 +851,7 @@ function renderMsgs(extra=''){
   let h=c.intro?`<details class="intro dots" ${ms.filter(m=>!m.hid).length>1?'':'open'}><summary><b>Intro</b> ▾</summary><p>${esc(c.intro)}</p></details>`:'';
   if(n)h+=`<div class="chap">${n} earlier chapter${n>1?'s':''} saved in memory</div>`;
   h+=ms.map((m,i)=>bubble(m,c,i)).join('')+extra;
-  if(!busy&&!extra)h+=`<div class="acts2">${ms.length?'<button data-a="cont">⏭ Continue</button>':'<button data-a="open">Begin</button>'}${last&&last.r==='a'&&ms.length>1?'<button data-a="redo">↻ Redo</button>':''}</div>`;
+  if(!busy&&!extra)h+=`<div class="acts2">${ms.length?'<button data-a="cont">⏭ Continue</button>':'<button data-a="open">Begin</button>'}${last&&last.r==='a'&&ms.length>1?'<button data-a="redo">↻ Redo</button>'+(engine()==='api'?'<button data-a="redo2">⇄ Redo with another AI</button>':''):''}</div>${last&&last.r==='a'&&last.by&&engine()==='api'?`<div class="byl">Written by ${esc(last.by)}</div>`:''}`;
   h+=`<div class="aig">Everything is generated by AI</div>`;
   $('msgs').innerHTML=h;$('msgs').classList.toggle('selmode',selMode);if(selMode)for(const el of $('msgs').querySelectorAll('.m[data-i]'))el.classList.toggle('picked',selSet.has(+el.dataset.i));window.scrollTo(0,document.body.scrollHeight);
 }
@@ -848,7 +859,7 @@ $('msgs').addEventListener('click',e=>{
   const a=e.target.closest('[data-a]')?.dataset.a;if(!a||busy)return;const c=cur;
   if(a==='cont')generate(c,'(( Continue the story: move the plot forward with a new scene, action or twist, without deciding anything for my character. ))');
   else if(a==='open')generate(c,OPEN);
-  else if(a==='redo'){c.msgs.pop();const l=c.msgs.at(-1);if(l&&l.hid&&l.r==='u'){c.msgs.pop();generate(c,l.t)}else generate(c,null)}
+  else if(a==='redo'||a==='redo2'){const old=c.msgs.pop(),av=a==='redo2'?(old.by||lastProvider):undefined;const l=c.msgs.at(-1);if(l&&l.hid&&l.r==='u'){c.msgs.pop();generate(c,l.t,false,null,av)}else generate(c,null,false,null,av)}
 });
 function activeLore(c){
   const recent=c.msgs.slice(-10).map(m=>m.t).join(' ').toLowerCase()+' '+c.intro.toLowerCase();
@@ -866,7 +877,8 @@ STORY BIBLE (characters, places, relationships, secrets, open plots): ${c.bible|
 ${c.saga?'THE STORY SO FAR (early chapters): '+c.saga:''}
 ${c.chapters.length?'RECENT CHAPTERS:\n'+c.chapters.map((x,i)=>'['+((c.sagaCount||0)+i+1)+'. '+x.title+'] '+x.t).join('\n'):''}
 === END OF MEMORY ===
-The most recent messages follow, word for word. Never contradict the memory or the card: names, ages, appearance, deaths, injuries, debts, promises, alliances, and what each character knows or doesn't know. If something is not in memory, do not claim it already happened.`;
+The most recent messages follow, word for word. Never contradict the memory or the card: names, ages, appearance, deaths, injuries, debts, promises, alliances, and what each character knows or doesn't know. If something is not in memory, do not claim it already happened.
+CONSISTENCY CHECK before you write: keep every person's exact name and spelling, and their exact role and family relationship (who is a parent, sibling, partner or guest) as established in the card, memory and recent messages. Never rename anyone, never swap two people, never invent new family members, and never move a scene to a room or time that contradicts the last messages. Only the characters physically present can speak or act.`;
 }
 const FREE=`Content: fiction for an adult who created it for fun. Like a good novel, you may handle dark and mature themes head-on: organized crime, violence, betrayal, murder, revenge, corruption, drugs, war, psychological and family abuse, harsh family conflict, dark romance, moral dilemmas and strong language. Villains are believable and dangerous, choices have real consequences, and characters can die. Don't soften the plot, don't moralize, and don't break the fiction with warnings. In the user's messages, text between asterisks *like this* is narration or their character's inner thoughts: other characters do NOT hear it and cannot know those thoughts; they can only react to physical actions they could actually see. Text outside asterisks is what the user's character says out loud, and others hear it. Lines like [Outfit — Bella] or [Scene] followed by a description come from pictures the user attached: treat them as exactly what is true in the story right now (what someone wears, looks like, their expression, where everyone is) and describe it naturally in your narration. If the user writes inside (( )), it is an out-of-story instruction: follow it without commenting on it.
 Only if the user says outside the fiction that they are in real danger or thinking of harming themselves, step out of the story kindly and encourage them to reach out for help (in Spain: 024; elsewhere, local emergency services).`;
@@ -891,14 +903,14 @@ ${charBlock(c)}`;
     const L={s:'1-2 paragraphs',m:'3-5 paragraphs',l:'6-9 long paragraphs'}[c.len||'m'];
     return `You are the narrator of an interactive novel and you voice ${c.name} and every other character.
 ${card}
-Style: novel prose in natural English, sensory and concrete. Narrate in second person (“you”) what the user perceives, and in third person for everyone else. Narration is plain text and ALL spoken dialogue goes inside double quotes “ ”. Give every character their own voice, motives and secrets; the world moves even when the user doesn't. Never decide what the user does, says, thinks or feels. End every reply on a moment that invites a response. Length: ${L}. Always write in English, even if the card or memory contains another language.
+Style: novel prose in natural English, sensory and concrete. Narrate in second person (“you”) what the user perceives, and in third person for everyone else. Narration is plain text and ALL spoken dialogue goes inside double quotes “ ”. Give every character their own voice, motives and secrets; the world moves even when the user doesn't. Never write anything the user's character says, does, thinks or feels — no lines in quotes for them, no actions, no inner thoughts; the user writes those. Only narrate what the other characters do and what the user's character perceives. End every reply on a moment that invites a response. Length: ${L}. Always write in English, even if the card or memory contains another language.
 ${FREE}
 ${castBlock(c)}${respBlock(c)}
 ${memBlock(c)}`;
   }
   return `You are ${c.name}. Play this character naturally and consistently in a private chat.
 ${card}
-Style: speak in first person like a phone chat, short messages (1-4 sentences); you may describe brief actions between asterisks *like this*. Bring up things from past conversations when it fits. Always reply in English.
+Style: speak in first person like a phone chat, short messages (1-4 sentences); you may describe brief actions between asterisks *like this*. Bring up things from past conversations when it fits. Never write the user's character's words or actions. Always reply in English.
 ${FREE}${castBlock(c)}${respBlock(c)}
 ${memBlock(c)}`;
 }
@@ -909,6 +921,10 @@ function chatReq(c){
   const messages=c.msgs.filter(m=>m.at>lastTs(c)).slice(-rawWin()-10).map(m=>({role:m.r==='u'?'user':'assistant',content:msgText(m)}));
   const lastU=[...c.msgs].reverse().find(m=>m.r==='u'&&!m.hid);
   const react=lastU&&lastU.atts&&lastU.atts.length&&c.msgs.at(-1)===lastU?`\n\nTHIS TURN: the user's latest message includes picture(s) labelled ${lastU.atts.map(a=>'['+a.label+']').join(', ')}. In this reply the characters must clearly NOTICE and REACT to it in character: comment on or stare at the outfit, respond to the expression, or play out the scene exactly as pictured. Describe what they see through their eyes; never mention that it is a picture.`:'';
+  const pp=personaFor(c),pn=pp?(pp.nick||pp.name):'the user\'s character';
+  const names=[c.name,...castOf(c).map(x=>x.name)].join(', ');
+  const tail=`\n\n(( Reminder for this reply: ${pp?pn+' is the user\'s character':'the protagonist is the user\'s character'} — do not write their words, actions or thoughts. Stay faithful to who everyone is (${names}${c.bible?', and everyone in the story bible':''}) and to exactly what just happened. Write clean, coherent English. ))`;
+  const lu=messages.at(-1);if(engine()==='api'&&lu&&lu.role==='user')lu.content+=tail;
   return {system:sys(c)+react,messages};
 }
 let attPend=[],sending=false;
@@ -927,7 +943,7 @@ async function describeAtt(c,a,text){
   const t=await llm({prompt:`The user attached this picture to their interactive story with ${c.name}. They labelled it: [${a.label}].
 Their message: ${text||'(none)'}
 Story so far, briefly: ${(c.bible||c.intro||'').slice(0,800)}
-Describe exactly what the picture shows, as it applies to the label, so a writer can use it as the truth of the story right now. For an outfit: every garment, color, fabric, cut, accessories, hair. For an expression: face, eyes, mouth, emotion, body language. For a scene: who is where, poses, expressions, clothes, place, lighting, mood. Use the story's names for the people when the label names them. Ignore drawing style, watermarks and any text in the image. 70-150 words, English, no preamble.`},{images:[a.data],tier:'default',max:400,temp:.3});
+Describe exactly what the picture shows, as it applies to the label, so a writer can use it as the truth of the story right now. For an outfit: every garment, color, fabric, cut, accessories, hair. For an expression: face, eyes, mouth, emotion, body language. For a scene: who is where, poses, expressions, clothes, place, lighting, mood. Use the story's names for the people when the label names them. Ignore drawing style, watermarks and any text in the image. 70-150 words, English, no preamble.`},{images:[a.data],tier:'default',max:400,temp:.3,mem:true});
   return (t||'').trim();
 }
 async function sendMsg(){
@@ -945,7 +961,7 @@ async function sendMsg(){
   $('inp').value='';autosize();attPend=[];renderAtt();$('sugg').innerHTML='';
   generate(c,t||' ',true,atts);
 }
-async function generate(c,userText,visible,atts){
+async function generate(c,userText,visible,atts,avoid){
   if(busy)return;
   if(engine()==='none'){noAI();return}
   if(userText)c.msgs.push({r:'u',t:userText.trim(),at:Date.now(),...(visible?{}:{hid:true}),...(atts&&atts.length?{atts}:{})});
@@ -953,9 +969,9 @@ async function generate(c,userText,visible,atts){
   if(cur===c)renderMsgs(`<div class="m a" id="live"><span class="typing"><span></span><span></span><span></span></span></div>`);
   ctrl=new AbortController();let txt='';
   const done=()=>{busy=false;$('send').textContent='➤';$('send').setAttribute('aria-label','Send');ctrl=null};
-  try{txt=await llm(chatReq(c),{onWait:s=>{const l=$('live');if(l)l.innerHTML=`<span class="hint" style="margin:0">All free AIs are busy for a moment. Waiting ${s}s and trying again…</span>`},signal:ctrl.signal,max:c.len==='l'?2600:1800,onText:t=>{txt=t;const l=$('live');if(l)l.innerHTML=fmtA(t,c);window.scrollTo(0,document.body.scrollHeight)}})}
+  try{txt=await llm(chatReq(c),{onWait:s=>{const l=$('live');if(l)l.innerHTML=`<span class="hint" style="margin:0">All free AIs are busy for a moment. Waiting ${s}s and trying again…</span>`},avoid,signal:ctrl.signal,max:c.len==='l'?2600:1800,onText:t=>{txt=t;const l=$('live');if(l)l.innerHTML=fmtA(t,c);window.scrollTo(0,document.body.scrollHeight)}})}
   catch(e){if(e&&e.text)txt=e.text;if(!txt){if(userText)c.msgs.pop();done();if(cur===c)renderMsgs(`<div class="m err">${esc(errMsg(e))}</div>`);if(visible&&userText)$('inp').value=userText;return}}
-  c.msgs.push({r:'a',t:txt.trim(),at:Date.now()});
+  c.msgs.push({r:'a',t:txt.trim(),at:Date.now(),by:lastProvider||''});
   done();if(cur===c)renderMsgs();
   saveChar(c);c.sinceMem=(c.sinceMem||0)+1;maintain(c);
 }
