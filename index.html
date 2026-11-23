@@ -153,8 +153,20 @@ button:disabled{opacity:.5;cursor:default}
 @media(prefers-reduced-motion:reduce){.typing span{animation:none}}
 .sugg{display:flex;flex-direction:column;gap:6px;padding:0 max(5vw,14px) 8px}
 .sugg button{background:#000c;border:1px solid #fff3;border-radius:16px;text-align:start;padding:10px 14px;font-size:14.5px}
-.comp{position:sticky;bottom:0;display:flex;gap:8px;align-items:flex-end;padding:8px max(5vw,14px) max(10px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#000 40%)}
-.comp textarea{flex:1;resize:none;border:1.5px solid #fff3;border-radius:24px;padding:10px 16px;font-size:16px;background:#0b0a0cdd;max-height:160px;color:var(--ink)}
+.comp{position:sticky;bottom:0;display:block;padding:8px max(4vw,12px) max(10px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#000 22%)}
+.tools{display:flex;gap:8px;align-items:center;margin-top:8px}
+.tbtn{min-height:42px;border-radius:12px;background:#1d1c21;border:1px solid #fff2;padding:0 13px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.tools .grow{flex:1}
+.attrow{display:flex;gap:8px;overflow-x:auto;margin-bottom:8px}
+.att{flex:none;width:118px;background:#1d1c21;border:1px solid #fff2;border-radius:12px;padding:6px;position:relative}
+.att .im{display:block;width:100%;height:96px;border-radius:8px;background:#000 center/cover}
+.att input{width:100%;font-size:12.5px;background:#000;border:1px solid #fff3;border-radius:6px;color:#fff;padding:5px 6px;margin-top:5px}
+.att .x{position:absolute;top:2px;right:2px;width:26px;height:26px;min-height:26px;border-radius:50%;background:#000c;padding:0;color:#fff}
+.mimgs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.mimgs figure{margin:0;width:120px}
+.mimgs .im{display:block;width:120px;height:150px;border-radius:10px;background:#000 center/cover}
+.mimgs figcaption{font-size:11.5px;color:#b9c6dc;margin-top:3px}
+.comp textarea{display:block;width:100%;resize:none;border:1.5px solid #fff3;border-radius:26px;padding:15px 20px;font-size:16.5px;line-height:1.4;min-height:60px;background:#0b0a0cee;max-height:240px;color:var(--ink)}
 .round{width:44px;height:44px;min-height:44px;font-size:17px;padding:0;border-radius:50%;display:grid;place-items:center;border:1.5px solid #fff3;background:#0b0a0cdd;flex:none;font-size:20px}
 .round.send{background:var(--red);border-color:var(--red)}
 .pad{padding:12px max(5vw,16px) 40px;display:grid;gap:18px}
@@ -165,8 +177,8 @@ button:disabled{opacity:.5;cursor:default}
 .chlist p{white-space:pre-wrap;font:15px/1.65 Literata,Georgia,serif;margin:8px 0 0;color:#ddd}
 .book{padding:20px max(6vw,18px) 60px;font:17px/1.8 Literata,Georgia,serif}
 .book p{margin:0 0 14px;white-space:pre-wrap}.book .you{color:#9fb4d6}
-.chiprow{display:flex;gap:8px;padding:0 max(5vw,14px);flex-wrap:wrap}
-.chiprow .pchip{margin:0;max-width:60%}
+.chiprow{display:flex;gap:8px;padding:0 max(4vw,12px);flex-wrap:nowrap;overflow-x:auto}
+.chiprow .pchip{margin:0;max-width:none;flex:none}
 .stack{display:flex}.stack .av{border:2px solid #0b0a0c;margin-inline-start:-10px}.stack .av:first-child{margin:0}
 .who{display:flex;align-items:center;gap:7px;font:600 12.5px Poppins,sans-serif;color:#ddd;margin:2px 0 4px}
 .chk{width:22px;height:22px;border-radius:50%;border:2px solid #fff6;flex:none;display:grid;place-items:center;font-size:13px}
@@ -182,7 +194,7 @@ button:disabled{opacity:.5;cursor:default}
 .switch{width:52px;height:30px;min-height:30px;border-radius:999px;background:#333;position:relative;padding:0;flex:none}
 .switch::after{content:"";position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}
 .switch[aria-checked=true]{background:var(--red)}.switch[aria-checked=true]::after{left:26px}
-.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#fff;color:#000;padding:10px 16px;border-radius:14px;font-size:14px;display:none;z-index:20;max-width:90vw}
+.toast{position:fixed;left:50%;bottom:190px;transform:translateX(-50%);background:#fff;color:#000;padding:10px 16px;border-radius:14px;font-size:14px;display:none;z-index:20;max-width:90vw}
 dialog{border:0;border-radius:22px;padding:20px;background:var(--panel);color:var(--ink);width:min(420px,92vw);max-height:85dvh}
 dialog::backdrop{background:#000b}
 .sheet{display:grid;gap:10px}
@@ -319,9 +331,17 @@ dialog::backdrop{background:#000b}
   <div class="sugg" id="sugg"></div>
   <div class="chiprow"><button class="pchip" id="pChip" aria-label="Choose your persona"></button><button class="pchip" id="rChip" aria-label="Choose who responds"></button></div>
   <div class="comp">
-    <textarea id="inp" rows="1" placeholder="Say something to me!" aria-label="Message"></textarea>
-    <button class="round" id="bulb" aria-label="Suggest replies">💡</button>
-    <button class="round send" id="send" aria-label="Send">➤</button>
+    <div class="attrow" id="attRow"></div>
+    <textarea id="inp" rows="2" placeholder="Say something to me!" aria-label="Message"></textarea>
+    <div class="tools">
+      <button class="tbtn" id="starBtn" aria-label="Add action between asterisks">✱ *…*</button>
+      <button class="tbtn" id="attBtn" aria-label="Add image">🖼 Image</button>
+      <span class="grow"></span>
+      <button class="round" id="bulb" aria-label="Suggest replies">💡</button>
+      <button class="round send" id="send" aria-label="Send">➤</button>
+    </div>
+    <input type="file" id="attImg" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
+    <datalist id="attLabels"></datalist>
   </div>
 </section>
 
@@ -781,14 +801,14 @@ function archive(c,ms){
 }
 
 /* ---------- chat ---------- */
-function openChat(id){if(selMode)endSel();
+function openChat(id){if(selMode)endSel();attPend=[];
   cur=chars.find(x=>x.id===id);if(!cur)return show('v-home');
   $('scene').style.backgroundImage=`url('${pic(cur)}')`;
   $('chatAv').innerHTML=avHTML(cur,40);$('chatName').textContent=cur.name;
   const n=(cur.sagaCount||0)+cur.chapters.length;$('chatSub').textContent='LV'+lvl(cur)+' · Chapter '+(n+1);
   $('v-chat').classList.toggle('novel',cur.style==='novel');
   if(!cur.personaId&&me.defPersona){cur.personaId=me.defPersona}
-  renderPChip();renderRChip();$('sugg').innerHTML='';renderMsgs();show('v-chat');
+  renderPChip();renderRChip();renderAtt();$('sugg').innerHTML='';renderMsgs();show('v-chat');
 }
 const NARR_IMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="#8b5cf6"/><rect x="9" y="11" width="22" height="15" rx="4" fill="#fff"/><path d="M14 26l-2 5 6-5z" fill="#fff"/></svg>');
 function castOf(c){return c.cast||[]}
@@ -802,7 +822,7 @@ function avFor(c,name){
 function splitSpk(t){const parts=t.split(/\[\[([^\]\n]{1,40})\]\]/);if(parts.length<2)return null;const out=[];if(parts[0].trim())out.push({n:'',t:parts[0].trim()});for(let i=1;i<parts.length;i+=2)out.push({n:parts[i].trim(),t:(parts[i+1]||'').trim()});return out}
 function fmtA(t,c){const sp=splitSpk(t);if(!sp)return fmt(t,c.style);return sp.map(x=>`<div class="who"><span class="av" style="width:22px;height:22px;background-image:url('${avFor(c,x.n)}')"></span>${esc(x.n||c.name)}</div>${fmt(x.t,c.style)}`).join('<div style="height:10px"></div>')}
 function bubbleA(m,c,i){const sp=splitSpk(m.t);if(!sp)return `<div class="m a" data-i="${i}">${fmt(m.t,c.style)}</div>`;return sp.filter(x=>x.t).map(x=>`<div class="m a" data-i="${i}"><div class="who"><span class="av" style="width:22px;height:22px;background-image:url('${avFor(c,x.n)}')"></span>${esc(x.n||c.name)}</div>${fmt(x.t,c.style)}</div>`).join('')}
-function bubble(m,c,i){if(m.hid)return '';if(m.r==='a'&&!/^\s*\(\(/.test(m.t))return bubbleA(m,c,i);const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}" data-i="${i}">${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</div>`}
+function bubble(m,c,i){if(m.hid)return '';if(m.r==='a'&&!/^\s*\(\(/.test(m.t))return bubbleA(m,c,i);const ooc=/^\s*\(\(/.test(m.t);return `<div class="m ${m.r}${ooc?' ooc':''}" data-i="${i}">${m.atts&&m.atts.length?`<div class="mimgs">${m.atts.map(a=>`<figure><span class="im" style="background-image:url('${imgs['m_'+a.id]||''}')"></span><figcaption>[${esc(a.label)}]</figcaption></figure>`).join('')}</div>`:''}${m.r==='a'?fmt(m.t,c.style):fmtU(m.t)}</div>`}
 function renderMsgs(extra=''){
   const c=cur,ms=c.msgs,last=ms.at(-1),n=(c.sagaCount||0)+c.chapters.length;
   let h=c.intro?`<details class="intro dots" ${ms.filter(m=>!m.hid).length>1?'':'open'}><summary><b>Intro</b> ▾</summary><p>${esc(c.intro)}</p></details>`:'';
@@ -836,7 +856,7 @@ ${c.chapters.length?'RECENT CHAPTERS:\n'+c.chapters.map((x,i)=>'['+((c.sagaCount
 === END OF MEMORY ===
 The most recent messages follow, word for word. Never contradict the memory or the card: names, ages, appearance, deaths, injuries, debts, promises, alliances, and what each character knows or doesn't know. If something is not in memory, do not claim it already happened.`;
 }
-const FREE=`Content: fiction for an adult who created it for fun. Like a good novel, you may handle dark and mature themes head-on: organized crime, violence, betrayal, murder, revenge, corruption, drugs, war, psychological and family abuse, harsh family conflict, dark romance, moral dilemmas and strong language. Villains are believable and dangerous, choices have real consequences, and characters can die. Don't soften the plot, don't moralize, and don't break the fiction with warnings. In the user's messages, text between asterisks *like this* is narration or their character's inner thoughts: other characters do NOT hear it and cannot know those thoughts; they can only react to physical actions they could actually see. Text outside asterisks is what the user's character says out loud, and others hear it. If the user writes inside (( )), it is an out-of-story instruction: follow it without commenting on it.
+const FREE=`Content: fiction for an adult who created it for fun. Like a good novel, you may handle dark and mature themes head-on: organized crime, violence, betrayal, murder, revenge, corruption, drugs, war, psychological and family abuse, harsh family conflict, dark romance, moral dilemmas and strong language. Villains are believable and dangerous, choices have real consequences, and characters can die. Don't soften the plot, don't moralize, and don't break the fiction with warnings. In the user's messages, text between asterisks *like this* is narration or their character's inner thoughts: other characters do NOT hear it and cannot know those thoughts; they can only react to physical actions they could actually see. Text outside asterisks is what the user's character says out loud, and others hear it. Lines like [Outfit — Bella] or [Scene] followed by a description come from pictures the user attached: treat them as exactly what is true in the story right now (what someone wears, looks like, their expression, where everyone is) and describe it naturally in your narration. If the user writes inside (( )), it is an out-of-story instruction: follow it without commenting on it.
 Only if the user says outside the fiction that they are in real danger or thinking of harming themselves, step out of the story kindly and encourage them to reach out for help (in Spain: 024; elsewhere, local emergency services).`;
 function charBlock(c){return `CHARACTER (mandatory; this is the most important part of the experience)
 How they treat the user: ${c.att.join(', ')||'according to their personality'}.
@@ -872,15 +892,51 @@ ${memBlock(c)}`;
 }
 const RAW_API=200;function rawWin(){return engine()==='api'?RAW_API:RAW_BASE}
 function lastTs(c){return c.chapters.at(-1)?.upTo||0}
+function msgText(m){if(!m.atts||!m.atts.length)return m.t;return [m.t,...m.atts.map(a=>`[${a.label}] (picture the user attached; treat it as an exact description of the story right now): ${a.desc||'(could not be seen)'}`)].filter(Boolean).join('\n')}
 function chatReq(c){
-  const messages=c.msgs.filter(m=>m.at>lastTs(c)).slice(-rawWin()-10).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t}));
-  return {system:sys(c),messages};
+  const messages=c.msgs.filter(m=>m.at>lastTs(c)).slice(-rawWin()-10).map(m=>({role:m.r==='u'?'user':'assistant',content:msgText(m)}));
+  const lastU=[...c.msgs].reverse().find(m=>m.r==='u'&&!m.hid);
+  const react=lastU&&lastU.atts&&lastU.atts.length&&c.msgs.at(-1)===lastU?`\n\nTHIS TURN: the user's latest message includes picture(s) labelled ${lastU.atts.map(a=>'['+a.label+']').join(', ')}. In this reply the characters must clearly NOTICE and REACT to it in character: comment on or stare at the outfit, respond to the expression, or play out the scene exactly as pictured. Describe what they see through their eyes; never mention that it is a picture.`:'';
+  return {system:sys(c)+react,messages};
 }
-function sendMsg(){const t=$('inp').value.trim();if(!t||busy)return;$('inp').value='';autosize();$('sugg').innerHTML='';generate(cur,t,true)}
-async function generate(c,userText,visible){
+let attPend=[],sending=false;
+function attLabelsFor(c){const p=personaFor(c),pn=p?(p.nick||p.name):'me',cn=c.name.split(' ')[0];return ['Scene','Outfit — '+pn,'Outfit — '+cn,'Expression — '+pn,'Expression — '+cn,'Place','Object','How '+pn+' looks now','How '+cn+' looks now',...castOf(c).map(x=>'Outfit — '+x.name)]}
+function renderAtt(){
+  $('attLabels').innerHTML=cur?attLabelsFor(cur).map(l=>`<option value="${esc(l)}">`).join(''):'';
+  $('attRow').innerHTML=attPend.map((a,i)=>`<div class="att"><span class="im" style="background-image:url('${a.data}')"></span><button class="x" data-ax="${i}" aria-label="Remove image">×</button><input data-al="${i}" list="attLabels" value="${esc(a.label)}" maxlength="60" aria-label="What this image is"></div>`).join('');
+}
+$('attRow').addEventListener('input',e=>{const i=e.target.dataset.al;if(i!=null)attPend[+i].label=e.target.value});
+$('attRow').addEventListener('click',e=>{const x=e.target.closest('[data-ax]');if(x){attPend.splice(+x.dataset.ax,1);renderAtt()}});
+$('attBtn').addEventListener('click',()=>{if(attPend.length>=4){toast('4 images per message max.');return}try{$('attImg').click()}catch(e){toast('Paste the image into the message box instead.')}});
+$('attImg').addEventListener('change',async e=>{const fs=[...(e.target.files||[])].slice(0,4-attPend.length);e.target.value='';for(const f of fs){const d=await readImg(f,800);if(d)attPend.push({data:d,label:'Scene'})}renderAtt();if(attPend.length)toast('Tap the label under the image to say what it is.')});
+$('inp').addEventListener('paste',async e=>{const its=[...(e.clipboardData?.items||[])].filter(i=>i.type.startsWith('image/'));if(!its.length)return;e.preventDefault();for(const it of its.slice(0,4-attPend.length)){const d=await readImg(it.getAsFile(),800);if(d)attPend.push({data:d,label:'Scene'})}renderAtt()});
+$('starBtn').addEventListener('click',()=>{const i=$('inp'),a=i.selectionStart??i.value.length,b=i.selectionEnd??a;const sel=i.value.slice(a,b);i.value=i.value.slice(0,a)+'*'+sel+'*'+i.value.slice(b);i.focus();const pos=sel?b+2:a+1;i.setSelectionRange(pos,pos);autosize()});
+async function describeAtt(c,a,text){
+  const t=await llm({prompt:`The user attached this picture to their interactive story with ${c.name}. They labelled it: [${a.label}].
+Their message: ${text||'(none)'}
+Story so far, briefly: ${(c.bible||c.intro||'').slice(0,800)}
+Describe exactly what the picture shows, as it applies to the label, so a writer can use it as the truth of the story right now. For an outfit: every garment, color, fabric, cut, accessories, hair. For an expression: face, eyes, mouth, emotion, body language. For a scene: who is where, poses, expressions, clothes, place, lighting, mood. Use the story's names for the people when the label names them. Ignore drawing style, watermarks and any text in the image. 70-150 words, English, no preamble.`},{images:[a.data],tier:'default',max:400,temp:.3});
+  return (t||'').trim();
+}
+async function sendMsg(){
+  const t=$('inp').value.trim();if((!t&&!attPend.length)||busy||sending)return;
+  const c=cur,atts=attPend.map(a=>({...a,label:(a.label||'Picture').replace(/^\[|\]$/g,'').trim()||'Picture'}));
+  if(atts.length){
+    if(engine()==='none'){noAI();return}
+    const canSee=engine()==='api'||visionOK;
+    sending=true;$('send').disabled=true;toast(canSee?'Looking at your picture…':'This AI can\'t see images; only the label will be used.');
+    for(const a of atts){a.id='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      if(canSee){try{a.desc=await describeAtt(c,a,t)}catch(e){a.desc='';toast(errMsg(e))}}
+      imgs['m_'+a.id]=a.data;write('img_m_'+a.id,{kind:'img',cid:'m_'+a.id,data:a.data});delete a.data}
+    sending=false;$('send').disabled=false;
+  }
+  $('inp').value='';autosize();attPend=[];renderAtt();$('sugg').innerHTML='';
+  generate(c,t||' ',true,atts);
+}
+async function generate(c,userText,visible,atts){
   if(busy)return;
   if(engine()==='none'){noAI();return}
-  if(userText)c.msgs.push({r:'u',t:userText,at:Date.now(),...(visible?{}:{hid:true})});
+  if(userText)c.msgs.push({r:'u',t:userText.trim(),at:Date.now(),...(visible?{}:{hid:true}),...(atts&&atts.length?{atts}:{})});
   busy=true;$('send').textContent='■';$('send').setAttribute('aria-label','Stop');
   if(cur===c)renderMsgs(`<div class="m a" id="live"><span class="typing"><span></span><span></span><span></span></span></div>`);
   ctrl=new AbortController();let txt='';
@@ -893,7 +949,7 @@ async function generate(c,userText,visible){
 }
 $('send').addEventListener('click',()=>{if(busy&&ctrl)ctrl.abort();else sendMsg()});
 $('inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(pointer:fine)').matches){e.preventDefault();sendMsg()}});
-function autosize(){const i=$('inp');i.style.height='auto';i.style.height=Math.min(i.scrollHeight,160)+'px'}
+function autosize(){const i=$('inp');i.style.height='auto';i.style.height=Math.min(Math.max(i.scrollHeight,60),240)+'px'}
 $('inp').addEventListener('input',autosize);
 $('editBtn').addEventListener('click',()=>openEdit(cur.id));
 $('bulb').addEventListener('click',async()=>{
@@ -949,6 +1005,7 @@ function deleteMsgs(ids){
   for(const i of ids){const p=c.msgs[i-1];if(p&&p.hid&&c.msgs[i]&&c.msgs[i].r==='a')del.add(i-1)}
   const removed=c.msgs.filter((m,i)=>del.has(i));if(!removed.length)return;
   ask(removed.filter(m=>!m.hid).length>1?`Delete ${removed.filter(m=>!m.hid).length} messages?`:'Delete this message?','They disappear from the chat and the AI forgets them, including anything it wrote down in its memory about them.','Delete',()=>{
+    for(const m of removed)for(const a of (m.atts||[])){delete imgs['m_'+a.id];write('img_m_'+a.id,null)}
     c.msgs=c.msgs.filter((m,i)=>!del.has(i));saveChar(c);renderMsgs();
     toast(engine()==='none'?'Deleted.':'Deleted. Cleaning the AI\'s memory…');forget(c,removed);
   });
@@ -984,7 +1041,7 @@ Return ONLY JSON: {"facts":"...","bible":"...","chapters":[{"i":number,"text":".
 /* ---------- memory engine (maximum) ---------- */
 let mq=Promise.resolve();
 const MEM_TIER='complex';
-function transcript(c,ms){return ms.map(m=>(m.r==='u'?'USER':(c.style==='novel'?'NARRATOR':c.name.toUpperCase()))+': '+m.t).join('\n\n')}
+function transcript(c,ms){return ms.map(m=>(m.r==='u'?'USER':(c.style==='novel'?'NARRATOR':c.name.toUpperCase()))+': '+msgText(m)).join('\n\n')}
 function parseJSON(t){if(!t)return null;t=t.replace(/```json|```/g,'');try{return JSON.parse(t)}catch(e){}const m=t.match(/[\[{][\s\S]*[\]}]/);if(m)try{return JSON.parse(m[0])}catch(e){}return null}
 function maintain(c,force){
   mq=mq.then(async()=>{
